@@ -1,0 +1,30 @@
+@import url("https://fonts.googleapis.com/css2?family=Courgette&family=Days+One&family=Nunito:wght@300&family=Palanquin+Dark:wght@700&family=Roboto&display=swap");
+
+@import url("https://fonts.googleapis.com/css2?family=Rubik+Distressed&family=Titan+One&display=swap");
+
+.scrollable-element {
+  scrollbar-width: thin;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

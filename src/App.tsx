@@ -13,13 +13,6 @@ import Orders from "./pages/Order/index";
 import Checkout from "./pages/Checkout/index";
 import Profile from "./pages/Profile/index";
 
-import Dashboard from "./Admin/Dashboard/index";
-import AdminOrderDetails from "./Admin/OrderDetails/OrderDetails";
-import Edit from "./Admin/EditProduct/index";
-import AdminLogin from "./Admin/Login/LogInPage";
-import AdminProfile from "./Admin/Profile/index";
-import AdminUpload from "./Admin/Upload/index";
-import AdminProductDetails from "./Admin/ProductDetails/index";
 import About from "./pages/About";
 import { useDispatch } from "react-redux";
 import { logout } from "./Redux/AuthSlice";
@@ -69,18 +62,6 @@ const App: React.FC = () => {
         <Route path={ROUTES.ABOUTUS} element={<About />} />
 
         {/* ADmin */}
-
-        <Route index path={ROUTES.ADMIN_LANDINGPAGE} element={<Dashboard />} />
-        <Route
-          index
-          path={`${ROUTES.ADMIN_ORDER_DETAILS}/:id`}
-          element={<AdminOrderDetails />}
-        />
-        <Route index path="/admin/product_details/:id" element={<AdminProductDetails />} />
-        <Route index path={ROUTES.ADMIN_UPLOAD_PRODUCTS} element={<AdminUpload />} />
-        <Route path={`${ROUTES.ADMIN_EDIT_PRODUCT}/:id`} element={<Edit />} />
-        <Route path={ROUTES.ADMIN_LOGIN} element={<AdminLogin />} />
-        <Route path={ROUTES.ADMIN_PROFILE} element={<AdminProfile />} />
 
         <Route path={"*"} element={<Page404 />} />
       </Routes>

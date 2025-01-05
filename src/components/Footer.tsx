@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 import React from "react";
 import { Typography } from "@material-tailwind/react";
 import ROUTES from "../utils/Routes";
@@ -13,12 +12,18 @@ const Footer: React.FC = () => {
             <Typography
               color="blue-gray"
               className="font-normal transition-colors hover:text-blue-500 focus:text-blue-500"
+              placeholder=""
+              onPointerEnterCapture={() => {}}
+              onPointerLeaveCapture={() => {}}
             >
               <a href={ROUTES.LANDINGPAGE}> Home</a>
             </Typography>
           </li>
           <li>
             <Typography
+              placeholder=""
+              onPointerEnterCapture={() => {}}
+              onPointerLeaveCapture={() => {}}
               color="blue-gray"
               className="font-normal transition-colors hover:text-blue-500 focus:text-blue-500"
             >
@@ -36,6 +41,9 @@ const Footer: React.FC = () => {
           </li> */}
           <li>
             <Typography
+              placeholder=""
+              onPointerEnterCapture={() => {}}
+              onPointerLeaveCapture={() => {}}
               color="blue-gray"
               className="font-normal transition-colors hover:text-blue-500 focus:text-blue-500"
             >
@@ -45,7 +53,13 @@ const Footer: React.FC = () => {
         </ul>
       </div>
       <hr className="my-8 border-blue-gray-50" />
-      <Typography color="blue-gray" className="text-center font-normal">
+      <Typography
+        placeholder=""
+        onPointerEnterCapture={() => {}}
+        onPointerLeaveCapture={() => {}}
+        color="blue-gray"
+        className="text-center font-normal"
+      >
         &copy; 2024 One Store
       </Typography>
     </footer>

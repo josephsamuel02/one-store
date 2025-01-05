@@ -34,6 +34,7 @@ const Orders: React.FC = () => {
       Navigate(ROUTES.ADMIN_LOGIN);
     }
     fetchOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

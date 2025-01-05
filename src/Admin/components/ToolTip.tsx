@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { TbInfoCircle } from "react-icons/tb";
 import Tippy from "@tippyjs/react";

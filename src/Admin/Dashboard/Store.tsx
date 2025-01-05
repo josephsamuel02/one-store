@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from "react";
 import ROUTES from "../../utils/Routes";
 
@@ -26,6 +25,7 @@ const Store: React.FC = () => {
       Navigate(ROUTES.ADMIN_LOGIN);
     }
     fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

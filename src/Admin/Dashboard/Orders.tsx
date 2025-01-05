@@ -51,10 +51,19 @@ const Orders: React.FC = () => {
             Orders.map((i: any, n: any) => (
               <>
                 {i.orderLevel == orderPage && (
-                  <Card className=" mx-auto mt-16 pb-6 w-auto rounded-lg" key={n}>
+                  <Card
+                    className=" mx-auto mt-16 pb-6 w-auto rounded-lg"
+                    key={n}
+                    placeholder=""
+                    onPointerEnterCapture={() => {}}
+                    onPointerLeaveCapture={() => {}}
+                  >
                     <CardHeader
                       className="relative h-50 rounded-md"
                       onClick={() => Navigate(`${ROUTES.ADMIN_ORDER_DETAILS}/${n}`)}
+                      placeholder=""
+                      onPointerEnterCapture={() => {}}
+                      onPointerLeaveCapture={() => {}}
                     >
                       <img
                         src={i.Products[0].image}
@@ -62,7 +71,12 @@ const Orders: React.FC = () => {
                         className="object-cover object-center h-full w-full"
                       />
                     </CardHeader>
-                    <Typography className="flex pt-4  items-center flex-row-reverse text-lg text-brown-900 gap-1.5 font-normal">
+                    <Typography
+                      className="flex pt-4  items-center flex-row-reverse text-lg text-brown-900 gap-1.5 font-normal"
+                      placeholder=""
+                      onPointerEnterCapture={() => {}}
+                      onPointerLeaveCapture={() => {}}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
@@ -80,21 +94,99 @@ const Orders: React.FC = () => {
                     <CardBody
                       className=" h-72 line-clamp-10 "
                       onClick={() => Navigate(`${ROUTES.ADMIN_ORDER_DETAILS}/${n}`)}
+                      placeholder=""
+                      onPointerEnterCapture={() => {}}
+                      onPointerLeaveCapture={() => {}}
                     >
-                      <Typography variant="h5" color="blue-gray" className="mb-2">
+                      <Typography
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                        variant="h5"
+                        color="blue-gray"
+                        className="mb-2"
+                      >
                         {i.surname} {i.name}
                       </Typography>
-                      <Typography className="line-clamp-3 ">{i.email}</Typography>
-                      <Typography className="line-clamp-3 ">{i.phone}</Typography>
-                      <Typography className="line-clamp-3 ">{i.alternativePhone}</Typography>
-                      <Typography className="line-clamp-3 ">{i.whatsappNumber}</Typography>
-                      <Typography className="line-clamp-3 ">{i.state}</Typography>
-                      <Typography className="line-clamp-3 ">{i.lga}</Typography>
-                      <Typography className="line-clamp-3 ">{i.phone}</Typography>
-                      <Typography className="line-clamp-3 ">{i.deliveryAddress}</Typography>
-                      <Typography className="line-clamp-3 ">{i.paymentMedium}</Typography>
+                      <Typography
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                        className="line-clamp-3 "
+                      >
+                        {i.email}
+                      </Typography>
+                      <Typography
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                        className="line-clamp-3 "
+                      >
+                        {i.phone}
+                      </Typography>
+                      <Typography
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                        className="line-clamp-3 "
+                      >
+                        {i.alternativePhone}
+                      </Typography>
+                      <Typography
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                        className="line-clamp-3 "
+                      >
+                        {i.whatsappNumber}
+                      </Typography>
+                      <Typography
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                        className="line-clamp-3 "
+                      >
+                        {i.state}
+                      </Typography>
+                      <Typography
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                        className="line-clamp-3 "
+                      >
+                        {i.lga}
+                      </Typography>
+                      <Typography
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                        className="line-clamp-3 "
+                      >
+                        {i.phone}
+                      </Typography>
+                      <Typography
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                        className="line-clamp-3 "
+                      >
+                        {i.deliveryAddress}
+                      </Typography>
+                      <Typography
+                        placeholder=""
+                        onPointerEnterCapture={() => {}}
+                        onPointerLeaveCapture={() => {}}
+                        className="line-clamp-3 "
+                      >
+                        {i.paymentMedium}
+                      </Typography>
                     </CardBody>
-                    <CardFooter className=" w-full mt-4 mx-auto flex flex-row shadow-none ">
+                    <CardFooter
+                      className=" w-full mt-4 mx-auto flex flex-row shadow-none "
+                      placeholder=""
+                      onPointerEnterCapture={() => {}}
+                      onPointerLeaveCapture={() => {}}
+                    >
                       <Tooltip
                         content="Call"
                         className=" mx-auto flex flex-row justify-center "
@@ -105,6 +197,9 @@ const Orders: React.FC = () => {
                           variant="lead"
                           color="green"
                           className=" mx-auto px-2 py-3 hover:bg-gray-200 flex flex-row   text-blue-600 font-lg uppercase rounded-full shadow-xl"
+                          placeholder=""
+                          onPointerEnterCapture={() => {}}
+                          onPointerLeaveCapture={() => {}}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -129,6 +224,9 @@ const Orders: React.FC = () => {
                           variant="lead"
                           color="green"
                           className=" mx-auto px-2 py-3 text-green-600 hover:bg-gray-200 flex flex-row   font-lg uppercase rounded-full shadow-xl"
+                          placeholder=""
+                          onPointerEnterCapture={() => {}}
+                          onPointerLeaveCapture={() => {}}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -153,6 +251,9 @@ const Orders: React.FC = () => {
                           variant="lead"
                           color="red"
                           className=" mx-auto px-2 py-3 hover:bg-gray-200 flex flex-row   font-lg uppercase rounded-full shadow-xl"
+                          placeholder=""
+                          onPointerEnterCapture={() => {}}
+                          onPointerLeaveCapture={() => {}}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"

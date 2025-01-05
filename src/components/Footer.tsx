@@ -1,5 +1,4 @@
 import React from "react";
-import { Typography } from "@material-tailwind/react";
 import ROUTES from "../utils/Routes";
 
 const Footer: React.FC = () => {
@@ -9,75 +8,41 @@ const Footer: React.FC = () => {
         <img src="/img/OneStore logo.svg" alt="logo-ct" className="mx-20 w-44 h-auto" />
         <ul className="flex flex-wrap items-center gap-y-2 gap-x-8">
           <li>
-            <Typography
-              color="blue-gray"
-              className="font-normal transition-colors hover:text-blue-500 focus:text-blue-500"
-              placeholder=""
-              onPointerEnterCapture={() => {
-                console.log("okay");
-              }}
-              onPointerLeaveCapture={() => {
-                console.log("okay");
-              }}
-            >
+            <p className="font-normal transition-colors hover:text-blue-500 focus:text-blue-500">
               <a href={ROUTES.LANDINGPAGE}> Home</a>
-            </Typography>
+            </p>
           </li>
           <li>
-            <Typography
-              placeholder=""
-              onPointerEnterCapture={() => {
-                console.log("okay");
-              }}
-              onPointerLeaveCapture={() => {
-                console.log("okay");
-              }}
+            <p
               color="blue-gray"
               className="font-normal transition-colors hover:text-blue-500 focus:text-blue-500"
             >
               <a href={ROUTES.ABOUTUS}> About Us</a>
-            </Typography>
+            </p>
           </li>
           {/* <li>
-            <Typography
+            <p
              
               color="blue-gray"
               className="font-normal transition-colors hover:text-blue-500 focus:text-blue-500"
             >
               Contact Us
-            </Typography>
+            </p>
           </li> */}
           <li>
-            <Typography
-              placeholder=""
-              onPointerEnterCapture={() => {
-                console.log("okay");
-              }}
-              onPointerLeaveCapture={() => {
-                console.log("okay");
-              }}
+            <p
               color="blue-gray"
               className="font-normal transition-colors hover:text-blue-500 focus:text-blue-500"
             >
               <a href={ROUTES.ADMIN_LOGIN}> Admin</a>
-            </Typography>
+            </p>
           </li>
         </ul>
       </div>
       <hr className="my-8 border-blue-gray-50" />
-      <Typography
-        placeholder=""
-        onPointerEnterCapture={() => {
-          console.log("okay");
-        }}
-        onPointerLeaveCapture={() => {
-          console.log("okay");
-        }}
-        color="blue-gray"
-        className="text-center font-normal"
-      >
+      <p color="blue-gray" className="text-center font-normal">
         &copy; 2024 One Store
-      </Typography>
+      </p>
     </footer>
   );
 };

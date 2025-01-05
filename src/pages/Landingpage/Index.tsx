@@ -28,7 +28,6 @@ const Index: React.FC = () => {
     fetchPost();
     // setAllProducts(ProductsData);
     // console.log(ProductsData);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // useEffect(() => {

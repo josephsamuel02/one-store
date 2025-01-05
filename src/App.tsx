@@ -24,6 +24,7 @@ import About from "./pages/About";
 import { useDispatch } from "react-redux";
 import { logout } from "./Redux/AuthSlice";
 import { clearUserData } from "./Redux/User";
+import { AppDispatch } from "./Redux/store";
 
 const checkTokenExpiry = () => {
   const expiryDate = localStorage.getItem("login_expiry_date");
@@ -42,8 +43,7 @@ const checkTokenExpiry = () => {
 };
 
 const App: React.FC = () => {
-  const dispatch = useDispatch();
-
+  const dispatch = useDispatch<AppDispatch>();
   // Check if the token has expired and clear the state if necessary
   if (checkTokenExpiry()) {
     dispatch(clearUserData());

@@ -13,8 +13,12 @@ const Footer: React.FC = () => {
               color="blue-gray"
               className="font-normal transition-colors hover:text-blue-500 focus:text-blue-500"
               placeholder=""
-              onPointerEnterCapture={() => {}}
-              onPointerLeaveCapture={() => {}}
+              onPointerEnterCapture={() => {
+                console.log("okay");
+              }}
+              onPointerLeaveCapture={() => {
+                console.log("okay");
+              }}
             >
               <a href={ROUTES.LANDINGPAGE}> Home</a>
             </Typography>
@@ -22,8 +26,12 @@ const Footer: React.FC = () => {
           <li>
             <Typography
               placeholder=""
-              onPointerEnterCapture={() => {}}
-              onPointerLeaveCapture={() => {}}
+              onPointerEnterCapture={() => {
+                console.log("okay");
+              }}
+              onPointerLeaveCapture={() => {
+                console.log("okay");
+              }}
               color="blue-gray"
               className="font-normal transition-colors hover:text-blue-500 focus:text-blue-500"
             >
@@ -42,8 +50,12 @@ const Footer: React.FC = () => {
           <li>
             <Typography
               placeholder=""
-              onPointerEnterCapture={() => {}}
-              onPointerLeaveCapture={() => {}}
+              onPointerEnterCapture={() => {
+                console.log("okay");
+              }}
+              onPointerLeaveCapture={() => {
+                console.log("okay");
+              }}
               color="blue-gray"
               className="font-normal transition-colors hover:text-blue-500 focus:text-blue-500"
             >
@@ -55,8 +67,12 @@ const Footer: React.FC = () => {
       <hr className="my-8 border-blue-gray-50" />
       <Typography
         placeholder=""
-        onPointerEnterCapture={() => {}}
-        onPointerLeaveCapture={() => {}}
+        onPointerEnterCapture={() => {
+          console.log("okay");
+        }}
+        onPointerLeaveCapture={() => {
+          console.log("okay");
+        }}
         color="blue-gray"
         className="text-center font-normal"
       >

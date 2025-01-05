@@ -56,15 +56,23 @@ const Orders: React.FC = () => {
                     className=" mx-auto mt-16 pb-6 w-auto rounded-lg"
                     key={n}
                     placeholder=""
-                    onPointerEnterCapture={() => {}}
-                    onPointerLeaveCapture={() => {}}
+                    onPointerEnterCapture={() => {
+                      console.log("okay");
+                    }}
+                    onPointerLeaveCapture={() => {
+                      console.log("okay");
+                    }}
                   >
                     <CardHeader
                       className="relative h-50 rounded-md"
                       onClick={() => Navigate(`${ROUTES.ADMIN_ORDER_DETAILS}/${n}`)}
                       placeholder=""
-                      onPointerEnterCapture={() => {}}
-                      onPointerLeaveCapture={() => {}}
+                      onPointerEnterCapture={() => {
+                        console.log("okay");
+                      }}
+                      onPointerLeaveCapture={() => {
+                        console.log("okay");
+                      }}
                     >
                       <img
                         src={i.Products[0].image}
@@ -75,8 +83,12 @@ const Orders: React.FC = () => {
                     <Typography
                       className="flex pt-4  items-center flex-row-reverse text-lg text-brown-900 gap-1.5 font-normal"
                       placeholder=""
-                      onPointerEnterCapture={() => {}}
-                      onPointerLeaveCapture={() => {}}
+                      onPointerEnterCapture={() => {
+                        console.log("okay");
+                      }}
+                      onPointerLeaveCapture={() => {
+                        console.log("okay");
+                      }}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -96,13 +108,21 @@ const Orders: React.FC = () => {
                       className=" h-72 line-clamp-10 "
                       onClick={() => Navigate(`${ROUTES.ADMIN_ORDER_DETAILS}/${n}`)}
                       placeholder=""
-                      onPointerEnterCapture={() => {}}
-                      onPointerLeaveCapture={() => {}}
+                      onPointerEnterCapture={() => {
+                        console.log("okay");
+                      }}
+                      onPointerLeaveCapture={() => {
+                        console.log("okay");
+                      }}
                     >
                       <Typography
                         placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
+                        onPointerEnterCapture={() => {
+                          console.log("okay");
+                        }}
+                        onPointerLeaveCapture={() => {
+                          console.log("okay");
+                        }}
                         variant="h5"
                         color="blue-gray"
                         className="mb-2"
@@ -111,72 +131,108 @@ const Orders: React.FC = () => {
                       </Typography>
                       <Typography
                         placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
+                        onPointerEnterCapture={() => {
+                          console.log("okay");
+                        }}
+                        onPointerLeaveCapture={() => {
+                          console.log("okay");
+                        }}
                         className="line-clamp-3 "
                       >
                         {i.email}
                       </Typography>
                       <Typography
                         placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
+                        onPointerEnterCapture={() => {
+                          console.log("okay");
+                        }}
+                        onPointerLeaveCapture={() => {
+                          console.log("okay");
+                        }}
                         className="line-clamp-3 "
                       >
                         {i.phone}
                       </Typography>
                       <Typography
                         placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
+                        onPointerEnterCapture={() => {
+                          console.log("okay");
+                        }}
+                        onPointerLeaveCapture={() => {
+                          console.log("okay");
+                        }}
                         className="line-clamp-3 "
                       >
                         {i.alternativePhone}
                       </Typography>
                       <Typography
                         placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
+                        onPointerEnterCapture={() => {
+                          console.log("okay");
+                        }}
+                        onPointerLeaveCapture={() => {
+                          console.log("okay");
+                        }}
                         className="line-clamp-3 "
                       >
                         {i.whatsappNumber}
                       </Typography>
                       <Typography
                         placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
+                        onPointerEnterCapture={() => {
+                          console.log("okay");
+                        }}
+                        onPointerLeaveCapture={() => {
+                          console.log("okay");
+                        }}
                         className="line-clamp-3 "
                       >
                         {i.state}
                       </Typography>
                       <Typography
                         placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
+                        onPointerEnterCapture={() => {
+                          console.log("okay");
+                        }}
+                        onPointerLeaveCapture={() => {
+                          console.log("okay");
+                        }}
                         className="line-clamp-3 "
                       >
                         {i.lga}
                       </Typography>
                       <Typography
                         placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
+                        onPointerEnterCapture={() => {
+                          console.log("okay");
+                        }}
+                        onPointerLeaveCapture={() => {
+                          console.log("okay");
+                        }}
                         className="line-clamp-3 "
                       >
                         {i.phone}
                       </Typography>
                       <Typography
                         placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
+                        onPointerEnterCapture={() => {
+                          console.log("okay");
+                        }}
+                        onPointerLeaveCapture={() => {
+                          console.log("okay");
+                        }}
                         className="line-clamp-3 "
                       >
                         {i.deliveryAddress}
                       </Typography>
                       <Typography
                         placeholder=""
-                        onPointerEnterCapture={() => {}}
-                        onPointerLeaveCapture={() => {}}
+                        onPointerEnterCapture={() => {
+                          console.log("okay");
+                        }}
+                        onPointerLeaveCapture={() => {
+                          console.log("okay");
+                        }}
                         className="line-clamp-3 "
                       >
                         {i.paymentMedium}
@@ -185,8 +241,12 @@ const Orders: React.FC = () => {
                     <CardFooter
                       className=" w-full mt-4 mx-auto flex flex-row shadow-none "
                       placeholder=""
-                      onPointerEnterCapture={() => {}}
-                      onPointerLeaveCapture={() => {}}
+                      onPointerEnterCapture={() => {
+                        console.log("okay");
+                      }}
+                      onPointerLeaveCapture={() => {
+                        console.log("okay");
+                      }}
                     >
                       <Tooltip
                         content="Call"
@@ -199,8 +259,12 @@ const Orders: React.FC = () => {
                           color="green"
                           className=" mx-auto px-2 py-3 hover:bg-gray-200 flex flex-row   text-blue-600 font-lg uppercase rounded-full shadow-xl"
                           placeholder=""
-                          onPointerEnterCapture={() => {}}
-                          onPointerLeaveCapture={() => {}}
+                          onPointerEnterCapture={() => {
+                            console.log("okay");
+                          }}
+                          onPointerLeaveCapture={() => {
+                            console.log("okay");
+                          }}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -226,8 +290,12 @@ const Orders: React.FC = () => {
                           color="green"
                           className=" mx-auto px-2 py-3 text-green-600 hover:bg-gray-200 flex flex-row   font-lg uppercase rounded-full shadow-xl"
                           placeholder=""
-                          onPointerEnterCapture={() => {}}
-                          onPointerLeaveCapture={() => {}}
+                          onPointerEnterCapture={() => {
+                            console.log("okay");
+                          }}
+                          onPointerLeaveCapture={() => {
+                            console.log("okay");
+                          }}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -253,8 +321,12 @@ const Orders: React.FC = () => {
                           color="red"
                           className=" mx-auto px-2 py-3 hover:bg-gray-200 flex flex-row   font-lg uppercase rounded-full shadow-xl"
                           placeholder=""
-                          onPointerEnterCapture={() => {}}
-                          onPointerLeaveCapture={() => {}}
+                          onPointerEnterCapture={() => {
+                            console.log("okay");
+                          }}
+                          onPointerLeaveCapture={() => {
+                            console.log("okay");
+                          }}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"

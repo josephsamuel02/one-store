@@ -12,13 +12,9 @@ import { db } from "../../DB/firebase";
 import DefaultNav from "../../components/DefaultNav";
 
 const Index: React.FC = () => {
-  // const ProductsData = useSelector((state: any) => state.Products.products);
-  // const dispatch = useDispatch<AppDispatch>();
-
   const [allProducts, setAllProducts] = useState<any>([]);
 
   useEffect(() => {
-    // dispatch<any>(GetProducts());
     const fetchPost = async () => {
       await getDocs(collection(db, "products")).then((querySnapshot) => {
         const newData: any = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));

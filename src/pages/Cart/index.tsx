@@ -5,9 +5,9 @@ import CartItems from "./CartItems";
 import Footer from "../../components/Footer";
 import { useNavigate } from "react-router-dom";
 import CategoryNav from "./CategoryNav";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch } from "../../Redux/store";
-import { getCart } from "../../Redux/Cart";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { toast } from "react-toastify";
+import { db } from "../../DB/firebase";
 
 const Cart: React.FC = () => {
   const token = localStorage.getItem("one_store_login");
@@ -15,28 +15,38 @@ const Cart: React.FC = () => {
   const [Cart, setCart] = useState<any>("");
   const [totalPrice, setTotalPrice] = useState(0);
 
-  const dispatch = useDispatch<AppDispatch>();
-  const CartState = useSelector((state: any) => state.Cart.cart);
-  const get = () => {
-    dispatch<any>(getCart());
+  const getCart = async () => {
+    try {
+      const targetRef = collection(db, "cart");
+      const q = query(targetRef, where("cartId", "==", token));
 
-    setCart(CartState);
+      await getDocs(q).then((querySnapshot) => {
+        const newData: any = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+        if (newData) {
+          setCart(newData);
+        }
+        let t = 0;
 
-    let t = 0;
-
-    for (let i = 0; i < CartState.length; i++) {
-      const productTotal = CartState[i].inStock * CartState[i].price;
-      t += productTotal;
+        for (let i = 0; i < newData.length; i++) {
+          const productTotal = newData[i].inStock * newData[i].price;
+          t += productTotal;
+        }
+        setTotalPrice(t);
+      });
+    } catch (error) {
+      toast.warning("Unable to login");
+      console.log(" Unable to get data", error);
     }
-    setTotalPrice(t);
   };
 
   useEffect(() => {
     if (!token) {
       Navigate("/login");
     }
-    get();
-  }, [CartState]);
+    getCart();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="w-full px-3 flex flex-col items-center   h-full pt-16 md:pt-20  bg-purple-100">

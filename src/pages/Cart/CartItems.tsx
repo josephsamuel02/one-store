@@ -1,35 +1,77 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from "react";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import CheckoutDetails from "../Checkout/CheckoutDetails";
-import { ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import ROUTES from "../../utils/Routes";
-import { useDispatch, useSelector } from "react-redux";
-import { DeleteCartItem, getCart, getMyOrders, UpdateCartQuantity } from "../../Redux/Cart";
-import { AppDispatch } from "../../Redux/store";
+
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  doc,
+  deleteDoc,
+} from "firebase/firestore";
+import { db } from "../../DB/firebase";
 
 interface AppComponent {
   cartItems: any;
   totalPrice: any;
 }
 const CartItems: React.FC<AppComponent> = ({ cartItems, totalPrice }) => {
-  const dispatch = useDispatch<AppDispatch>();
-  const myOrders = useSelector((state: any) => state.Cart.orders);
+  const token = localStorage.getItem("one_store_login");
+
   const priceFormat = new Intl.NumberFormat("en-US");
   const [ShowPrice] = useState<any>(true);
-  const [Order, setOrder] = useState<any>(myOrders);
+  const [Order, setOrder] = useState<any>();
 
   const [checkout, setCheckOut] = useState(false);
+
+  const getOrders = async () => {
+    try {
+      const targetRef = collection(db, "order");
+      const q = query(targetRef, where("userId", "==", token));
+      const querySnapshot = await getDocs(q);
+
+      const newData: any = querySnapshot.docs.map((doc) => ({ ...doc.data() }));
+      setOrder(newData[0]);
+      // console.log(...newData);
+    } catch (error) {
+      console.log(" Unable to get data");
+    }
+  };
+  const UpdateCartQuantity = async (id: string, q: number) => {
+    try {
+      await updateDoc(doc(db, "cart", id), { inStock: q });
+      // await delay(900);
+      // window.location.replace("/cart");
+    } catch (error) {
+      toast.error("unable increase product quantity quantity");
+    }
+  };
+
+  const deleteCartItem = async (id: any) => {
+    try {
+      await deleteDoc(doc(db, "cart", id));
+      toast.success("Item removed");
+      // await delay(900);
+      // window.location.reload();
+    } catch (e) {
+      toast.error("Error deleting document: ");
+    }
+  };
 
   const setT = () => {
     setCheckOut(true);
   };
 
   useEffect(() => {
-    !myOrders && dispatch<any>(getMyOrders());
-    setOrder(myOrders);
-  }, [myOrders]);
+    getOrders();
+  }, []);
 
   return (
     <>
@@ -64,11 +106,9 @@ const CartItems: React.FC<AppComponent> = ({ cartItems, totalPrice }) => {
                           value="-"
                           onClick={async () => {
                             const q = Number(i.inStock) - 1;
-                            // Number(i.inStock) > 1 && UpdateCartQuantity(i.id, q);
-
-                            Number(i.inStock) > 1 &&
-                              dispatch<any>(UpdateCartQuantity({ id: i.id, q: q }));
-                            dispatch<any>(getCart());
+                            if (Number(i.inStock) > 1) {
+                              await UpdateCartQuantity(i.id, q);
+                            }
                           }}
                         />
                         <p className="text-base text-black font-roboto">{Number(i.inStock)}</p>
@@ -77,11 +117,9 @@ const CartItems: React.FC<AppComponent> = ({ cartItems, totalPrice }) => {
                           className="mx-3 w-7 h-7 bg-Storepurple rounded shadow font-roboto font-bold text-white"
                           type="button"
                           value="+"
-                          onClick={async () => {
+                          onClick={() => {
                             const q = Number(i.inStock) + 1;
-
-                            dispatch<any>(UpdateCartQuantity({ id: i.id, q: q }));
-                            dispatch<any>(getCart());
+                            UpdateCartQuantity(i.id, q);
                           }}
                         />
                       </div>
@@ -92,8 +130,7 @@ const CartItems: React.FC<AppComponent> = ({ cartItems, totalPrice }) => {
                 <div
                   className="w-36 m-2 h-auto px-4 py-2 flex flex-row cursor-pointer items-center rounded-md hover:bg-slate-200 "
                   onClick={() => {
-                    dispatch<any>(DeleteCartItem({ id: i.id }));
-                    dispatch<any>(getCart());
+                    deleteCartItem(i.id);
                   }}
                 >
                   <span>

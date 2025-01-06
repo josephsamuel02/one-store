@@ -1,34 +1,45 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from "react";
 import ROUTES from "../utils/Routes";
 import { getDocs, collection, query, where } from "firebase/firestore";
 import { db } from "../DB/firebase";
 import { MdOutlineLocalGroceryStore, MdPersonOutline } from "react-icons/md";
-import { useDispatch, useSelector } from "react-redux";
-import { getCart } from "../Redux/Cart";
-import { AppDispatch } from "../Redux/store";
 
 const DefaultNav: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-  const CartState = useSelector((state: any) => state.Cart.cart);
-
   const Now = new Date().getTime();
-
-  const [Cart, setCart] = useState<any>(CartState);
+  const token = localStorage.getItem("one_store_login");
+  const [Cart, setCart] = useState<any>([]);
   const [exprLogin, setExpireLogin] = useState(true);
+
+  const getUserInfo = async () => {
+    try {
+      await getDocs(collection(db, "cart")).then((querySnapshot) => {
+        const newData: any = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+        if (newData) {
+          const d: any = [];
+          newData.map((item: any) => {
+            return item.cartId == token ? d.push(item) : null;
+          });
+          setCart(d);
+        }
+      });
+    } catch (error) {
+      console.error(" Unable to get cart", error);
+    }
+  };
 
   const [_, setSearchResult] = useState<any>([{ name: "computer" }]);
 
   useEffect(() => {
     const login_expiry_date = localStorage.getItem("login_expiry_date");
     if (Now < Number(login_expiry_date)) {
-      // getUserInfo();
-      dispatch<any>(getCart() as any);
+      getUserInfo();
       setExpireLogin(false);
     } else if (Now >= Number(login_expiry_date)) {
       setExpireLogin(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const searchProduct = async (word: string) => {
     if (typeof word !== "string") {
@@ -47,10 +58,6 @@ const DefaultNav: React.FC = () => {
       console.error("searchProduct error:", error);
     }
   };
-
-  useEffect(() => {
-    setCart(CartState);
-  }, [CartState]);
 
   useEffect(() => {
     searchProduct("milo");

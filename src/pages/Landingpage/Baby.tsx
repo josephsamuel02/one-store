@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import ROUTES from "../../utils/Routes";
-import { useDispatch, useSelector } from "react-redux";
 import { MdShoppingCart } from "react-icons/md";
-import { addToCart, getCart } from "../../Redux/Cart";
-import { AppDispatch } from "../../Redux/store";
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "../../DB/firebase";
+import { getCart } from "../../Redux/Cart";
 
 interface AppComponent {
   Products: any;
@@ -12,8 +12,23 @@ interface AppComponent {
 
 const Baby: React.FC<AppComponent> = ({ Products }) => {
   const priceFormat = new Intl.NumberFormat("en-US");
-  const dispatch = useDispatch<AppDispatch>();
-  const User = useSelector((state: any) => state.Auth.auth.data?.user_id);
+  const User = localStorage.getItem("one_store_login");
+
+  const addToCart = async (data: object) => {
+    try {
+      const token = localStorage.getItem("one_store_login");
+      if (!token) {
+        throw new Error("User not logged in.");
+      }
+      const response = await addDoc(collection(db, "cart"), {
+        ...data,
+        cartId: token, // Link item to the user's session
+      });
+      return { id: response.id, ...data }; // Return the new document ID and data
+    } catch (error: any) {
+      return error.message; // Reject with meaningful error message
+    }
+  };
 
   return (
     <div className="my-8 w-full h-auto">
@@ -58,9 +73,9 @@ const Baby: React.FC<AppComponent> = ({ Products }) => {
                         e.preventDefault();
                         e.stopPropagation();
                         const cartItem = { ...i, inStock: 1 };
-                        dispatch<any>(addToCart(cartItem));
-                        dispatch<any>(getCart());
-                        console.log({ ...i, inStock: 1 });
+                        addToCart(cartItem);
+                        getCart();
+                        // console.log({ ...i, inStock: 1 });
                       }}
                     >
                       <MdShoppingCart className="text-md text-white ml-auto" />

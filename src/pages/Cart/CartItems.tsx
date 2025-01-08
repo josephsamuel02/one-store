@@ -17,12 +17,14 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { db } from "../../DB/firebase";
+import delay from "delay";
 
 interface AppComponent {
   cartItems: any;
   totalPrice: any;
+  getCart: any;
 }
-const CartItems: React.FC<AppComponent> = ({ cartItems, totalPrice }) => {
+const CartItems: React.FC<AppComponent> = ({ cartItems, totalPrice, getCart }) => {
   const token = localStorage.getItem("one_store_login");
 
   const priceFormat = new Intl.NumberFormat("en-US");
@@ -57,8 +59,11 @@ const CartItems: React.FC<AppComponent> = ({ cartItems, totalPrice }) => {
   const deleteCartItem = async (id: any) => {
     try {
       await deleteDoc(doc(db, "cart", id));
+      getCart();
       toast.success("Item removed");
+
       // await delay(900);
+
       // window.location.reload();
     } catch (e) {
       toast.error("Error deleting document: ");

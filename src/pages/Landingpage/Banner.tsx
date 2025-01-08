@@ -91,7 +91,7 @@ const Banner: React.FC = () => {
       </div>
 
       <div className="  mx-auto w-full h-full md:w-4/5 ">
-        <Carousel autoPlay infiniteLoop showThumbs={true} showStatus={false} interval={2000}>
+        <Carousel autoPlay infiniteLoop showThumbs={false} showStatus={false} interval={2000}>
           <div>
             <img src="/img/banner1.png" alt="image 1" className="h-full w-full object-cover" />
           </div>

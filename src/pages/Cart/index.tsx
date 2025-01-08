@@ -50,9 +50,9 @@ const Cart: React.FC = () => {
 
   return (
     <div className="w-full px-3 flex flex-col items-center   h-full pt-16 md:pt-20  bg-purple-100">
-      <DefaultNav />
+      <DefaultNav Cart={Cart} />
       <CategoryNav />
-      {token && <CartItems cartItems={Cart} totalPrice={totalPrice} />}
+      {token && <CartItems cartItems={Cart} totalPrice={totalPrice} getCart={getCart} />}
       <Footer />
     </div>
   );

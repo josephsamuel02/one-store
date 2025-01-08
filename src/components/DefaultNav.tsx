@@ -6,35 +6,38 @@ import { getDocs, collection, query, where } from "firebase/firestore";
 import { db } from "../DB/firebase";
 import { MdOutlineLocalGroceryStore, MdPersonOutline } from "react-icons/md";
 
-const DefaultNav: React.FC = () => {
+interface AppComponent {
+  Cart: any;
+}
+
+const DefaultNav: React.FC<AppComponent> = ({ Cart }) => {
   const Now = new Date().getTime();
-  const token = localStorage.getItem("one_store_login");
-  const [Cart, setCart] = useState<any>([]);
+  // const [_, setCart] = useState<any>([]);
   const [exprLogin, setExpireLogin] = useState(true);
 
-  const getUserInfo = async () => {
-    try {
-      await getDocs(collection(db, "cart")).then((querySnapshot) => {
-        const newData: any = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-        if (newData) {
-          const d: any = [];
-          newData.map((item: any) => {
-            return item.cartId == token ? d.push(item) : null;
-          });
-          setCart(d);
-        }
-      });
-    } catch (error) {
-      console.error(" Unable to get cart", error);
-    }
-  };
+  // const getUserInfo = async () => {
+  //   try {
+  //     await getDocs(collection(db, "cart")).then((querySnapshot) => {
+  //       const newData: any = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+  //       if (newData) {
+  //         const d: any = [];
+  //         newData.map((item: any) => {
+  //           return item.cartId == token ? d.push(item) : null;
+  //         });
+  //         setCart(d);
+  //       }
+  //     });
+  //   } catch (error) {
+  //     console.error(" Unable to get cart", error);
+  //   }
+  // };
 
   const [_, setSearchResult] = useState<any>([{ name: "computer" }]);
 
   useEffect(() => {
     const login_expiry_date = localStorage.getItem("login_expiry_date");
     if (Now < Number(login_expiry_date)) {
-      getUserInfo();
+      // getUserInfo();
       setExpireLogin(false);
     } else if (Now >= Number(login_expiry_date)) {
       setExpireLogin(true);
@@ -93,10 +96,10 @@ const DefaultNav: React.FC = () => {
               <MdOutlineLocalGroceryStore size={32} className="mx-auto text-slate-700" />
               {Cart && Cart.length > 0 && (
                 <div
-                  className=" relative top w-5 h-5 items-center bg-red-600 rounded-full"
+                  className=" relative top w-4 h-4 items-center bg-red-600 rounded-full"
                   style={{ top: "-70%", right: "-65%" }}
                 >
-                  <p className=" text-center  text-sm font-roboto text-white ">
+                  <p className=" text-center  text-[10px] font-roboto text-white ">
                     {Cart.length}
                   </p>
                 </div>

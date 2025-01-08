@@ -2,14 +2,13 @@
 import React from "react";
 import ROUTES from "../../utils/Routes";
 import { MdShoppingCart } from "react-icons/md";
-import { addDoc, collection } from "firebase/firestore";
-import { db } from "../../DB/firebase";
 
 interface AppComponent {
   Products: any;
+  addToCart: (data: object) => Promise<{ id: string; [key: string]: any } | string>;
 }
 
-const Accessories: React.FC<AppComponent> = ({ Products }) => {
+const Accessories: React.FC<AppComponent> = ({ Products, addToCart }) => {
   const priceFormat = new Intl.NumberFormat("en-US");
   const User = localStorage.getItem("one_store_login");
 
@@ -38,22 +37,6 @@ const Accessories: React.FC<AppComponent> = ({ Products }) => {
   //     return error.message;
   //   }
   // };
-
-  const addToCart = async (data: object) => {
-    try {
-      const token = localStorage.getItem("one_store_login");
-      if (!token) {
-        throw new Error("User not logged in.");
-      }
-      const response = await addDoc(collection(db, "cart"), {
-        ...data,
-        cartId: token, // Link item to the user's session
-      });
-      return { id: response.id, ...data }; // Return the new document ID and data
-    } catch (error: any) {
-      return error.message; // Reject with meaningful error message
-    }
-  };
 
   return (
     <div className="my-8 w-full h-auto">

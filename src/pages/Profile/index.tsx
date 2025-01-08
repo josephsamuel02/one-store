@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from "react";
 import { MdEdit } from "react-icons/md";
 import Footer from "../../components/Footer";
@@ -8,7 +6,7 @@ import DefaultNav from "../../components/DefaultNav";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import delay from "delay";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
 import { db } from "../../DB/firebase";
 import { useNavigate } from "react-router-dom";
 
@@ -46,6 +44,26 @@ const Profile: React.FC = () => {
       });
   };
 
+  const [Cart, setCart] = useState<any>([]);
+
+  const getCartInfo = async () => {
+    try {
+      await getDocs(collection(db, "cart")).then((querySnapshot) => {
+        const newData: any = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+        if (newData) {
+          const d: any = [];
+          newData.map((item: any) => {
+            return item.cartId == token ? d.push(item) : null;
+          });
+          console.log(d.length);
+          setCart(d);
+        }
+      });
+    } catch (error) {
+      console.error(" Unable to get cart", error);
+    }
+  };
+
   useEffect(() => {
     if (!token) {
       Navigate("/login");
@@ -66,11 +84,13 @@ const Profile: React.FC = () => {
           Navigate("/");
         });
     }
+    getCartInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <>
-      <DefaultNav />
+      <DefaultNav Cart={Cart} />
 
       <div className="mx-auto w-full md:w-5/6 h-full mt-20 bg-white overflow-y-scroll scrollbar-hide items-center">
         <div className="mx-auto w-full md:w-96 p-2 mt-16 h-full flex flex-col items-center rounded-md md:shadow-lg">

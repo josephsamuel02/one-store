@@ -1,11 +1,39 @@
-import React from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useEffect, useState } from "react";
 import DefaultNav from "../../components/DefaultNav";
 import Footer from "../../components/Footer";
+import { getDocs, collection } from "firebase/firestore";
+import { db } from "../../DB/firebase";
 
 const About: React.FC = () => {
+  const token = localStorage.getItem("one_store_login");
+
+  const [Cart, setCart] = useState<any>([]);
+
+  const getCartInfo = async () => {
+    try {
+      await getDocs(collection(db, "cart")).then((querySnapshot) => {
+        const newData: any = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+        if (newData) {
+          const d: any = [];
+          newData.map((item: any) => {
+            return item.cartId == token ? d.push(item) : null;
+          });
+          console.log(d.length);
+          setCart(d);
+        }
+      });
+    } catch (error) {
+      console.error(" Unable to get cart", error);
+    }
+  };
+  useEffect(() => {
+    getCartInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <>
-      <DefaultNav />
+      <DefaultNav Cart={Cart} />
       <div className="w-full h-full mb-4 md:mb-36 py-5 md:py-20 px-0 md:px-20 lg:px-40 bg-bg1 bg-center bg-cover bg-no-repeat flex flex-col ">
         <div className="mt-20 px-6 md:px-20 pb-20 mx-auto w-11/12 md:w-full h-auto   bg-white rounded-sm md:rounded-xl shadow-lg">
           <img

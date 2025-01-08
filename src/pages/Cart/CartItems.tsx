@@ -17,7 +17,6 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { db } from "../../DB/firebase";
-import delay from "delay";
 
 interface AppComponent {
   cartItems: any;

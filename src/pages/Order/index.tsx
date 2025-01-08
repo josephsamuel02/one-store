@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import DefaultNav from "../../components/DefaultNav";
 import Footer from "../../components/Footer";
@@ -31,9 +32,34 @@ const Orders: React.FC = () => {
         setTotalPrice(t);
       });
     } catch (error) {
+      console.log(error);
       toast.warning(" Unable to login");
     }
   };
+
+  const [Cart, setCart] = useState<any>([]);
+
+  const getCartInfo = async () => {
+    try {
+      await getDocs(collection(db, "cart")).then((querySnapshot) => {
+        const newData: any = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+        if (newData) {
+          const d: any = [];
+          newData.map((item: any) => {
+            return item.cartId == token ? d.push(item) : null;
+          });
+          console.log(d.length);
+          setCart(d);
+        }
+      });
+    } catch (error) {
+      console.error(" Unable to get cart", error);
+    }
+  };
+  useEffect(() => {
+    getCartInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!token) {
@@ -44,7 +70,7 @@ const Orders: React.FC = () => {
 
   return (
     <div className="w-full h-full pt-16 md:pt-20 bg-purple-100">
-      <DefaultNav />
+      <DefaultNav Cart={Cart} />
       <OrderItems Orders={Orders} totalPrice={totalPrice} />
       <Footer />
     </div>

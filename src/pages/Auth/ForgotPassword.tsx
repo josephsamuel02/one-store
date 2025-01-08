@@ -1,11 +1,10 @@
 import React from "react";
 import Footer from "../../components/Footer";
-import DefaultNav from "../../components/DefaultNav";
 
 const ForgotPassword: React.FC = () => {
   return (
     <div className="w-full h-full  pt-16 md:pt-24 bg-purple-100">
-      <DefaultNav />
+      {/* <DefaultNav /> */}
 
       <div className="w-11/12 md:w-2/3 h-full my-auto py-20 mx-auto ">
         <form

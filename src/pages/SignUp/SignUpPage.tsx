@@ -54,13 +54,14 @@ const SignUp: React.FC = () => {
         Navigate("/login");
       }
     } catch (error) {
+      console.log(error);
       toast.error("Error: Failed to signup");
     }
   };
 
   return (
     <div className="w-full h-full pt-16 md:pt-24 bg-purple-100">
-      <DefaultNav />
+      <DefaultNav Cart={[]} />
 
       <div className="w-full h-auto mt-10 flex flex-col md:flex-row items-center  ">
         <div className=" mx-auto py-2 h-auto w-auto md:w-1/2">

@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-var */
@@ -82,7 +81,7 @@ const Login: React.FC = () => {
 
   return (
     <div className="w-full h-full pt-16 md:pt-24 bg-purple-100">
-      <DefaultNav />
+      <DefaultNav Cart={[]} />
       <div className="w-full h-auto md:pb-12 mt-10 flex flex-col md:flex-row items-center  ">
         <div className=" mx-auto py-2 h-auto w-auto md:w-1/2">
           <form

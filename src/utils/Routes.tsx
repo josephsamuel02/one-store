@@ -2,6 +2,7 @@ const ROUTES = {
   LANDINGPAGE: "/",
   CATEGORY: "/category",
   PRODUCT: "/product",
+  PRODUCTS: "/products",
   CART: "/cart",
   ORDERS: "/orders",
   CHECKOUT: "/checkout",

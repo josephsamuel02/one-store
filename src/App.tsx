@@ -4,6 +4,7 @@ import ROUTES from "./utils/Routes";
 import Index from "./pages/Landingpage/Index";
 import Category from "./pages/Category/index";
 import Product from "./pages/Product/index";
+import ProductsSearch from "./pages/Products/index";
 import Cart from "./pages/Cart/index";
 import Login from "./pages/Login/LogInPage";
 import SignUp from "./pages/SignUp/SignUpPage";
@@ -49,6 +50,7 @@ const App: React.FC = () => {
       <Routes>
         <Route index path={ROUTES.LANDINGPAGE} element={<Index />} />
         <Route index path={ROUTES.CATEGORY} element={<Category />} />
+        <Route path={ROUTES.PRODUCTS} element={<ProductsSearch />} />
         <Route index path="/product/:id" element={<Product />} />
         <Route index path={ROUTES.CART} element={<Cart />} />
         <Route path={ROUTES.ORDERS} element={<Orders />} />

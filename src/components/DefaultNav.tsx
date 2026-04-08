@@ -1,150 +1,158 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from "react";
 import ROUTES from "../utils/Routes";
-import { getDocs, collection, query, where } from "firebase/firestore";
-import { db } from "../DB/firebase";
-import { MdOutlineLocalGroceryStore, MdPersonOutline } from "react-icons/md";
+import { supabase } from "../DB/supabase";
+import {
+  MdOutlineLocalGroceryStore,
+  MdPersonOutline,
+  MdSearch,
+} from "react-icons/md";
 
 interface AppComponent {
-  Cart: any;
+  Cart: unknown[] | undefined;
+}
+
+function isLoginExpired(): boolean {
+  const expiry = localStorage.getItem("login_expiry_date");
+  if (!expiry) return true;
+  const t = parseInt(expiry, 10);
+  return Number.isNaN(t) || Date.now() > t;
 }
 
 const DefaultNav: React.FC<AppComponent> = ({ Cart }) => {
-  const Now = new Date().getTime();
-  // const [_, setCart] = useState<any>([]);
-  const [exprLogin, setExpireLogin] = useState(true);
-
-  // const getUserInfo = async () => {
-  //   try {
-  //     await getDocs(collection(db, "cart")).then((querySnapshot) => {
-  //       const newData: any = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-  //       if (newData) {
-  //         const d: any = [];
-  //         newData.map((item: any) => {
-  //           return item.cartId == token ? d.push(item) : null;
-  //         });
-  //         setCart(d);
-  //       }
-  //     });
-  //   } catch (error) {
-  //     console.error(" Unable to get cart", error);
-  //   }
-  // };
-
-  const [_, setSearchResult] = useState<any>([{ name: "computer" }]);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    const login_expiry_date = localStorage.getItem("login_expiry_date");
-    if (Now < Number(login_expiry_date)) {
-      // getUserInfo();
-      setExpireLogin(false);
-    } else if (Now >= Number(login_expiry_date)) {
-      setExpireLogin(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const syncFromStorage = () => {
+      const uid = localStorage.getItem("one_store_login");
+      setLoggedIn(!!uid && !isLoginExpired());
+    };
+
+    const sync = async () => {
+      const { data } = await supabase.auth.getSession();
+      const sessionUid = data.session?.user?.id ?? null;
+      if (sessionUid) {
+        localStorage.setItem("one_store_login", sessionUid);
+        if (isLoginExpired()) {
+          localStorage.setItem(
+            "login_expiry_date",
+            String(Date.now() + 24 * 60 * 60 * 1000)
+          );
+        }
+        setLoggedIn(true);
+        return;
+      }
+      syncFromStorage();
+    };
+
+    void sync();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT") {
+        localStorage.removeItem("one_store_login");
+        localStorage.removeItem("login_expiry_date");
+        setLoggedIn(false);
+        return;
+      }
+      if (session?.user?.id) {
+        localStorage.setItem("one_store_login", session.user.id);
+        if (isLoginExpired()) {
+          localStorage.setItem(
+            "login_expiry_date",
+            String(Date.now() + 24 * 60 * 60 * 1000)
+          );
+        }
+        setLoggedIn(true);
+        return;
+      }
+      syncFromStorage();
+    });
+
+    return () => sub.subscription.unsubscribe();
   }, []);
-  const searchProduct = async (word: string) => {
-    if (typeof word !== "string") {
-      throw new Error(
-        "searchProduct: Invalid input type. Expected a string for email search."
-      );
-    }
 
-    try {
-      const q = query(collection(db, "products"), where("name", "==", word));
-      const querySnapshot = await getDocs(q);
+  const cartList = Array.isArray(Cart) ? Cart : [];
+  const cartCount = cartList.length;
 
-      const data = querySnapshot.docs.map((doc) => doc.data());
-      setSearchResult(data);
-    } catch (error) {
-      console.error("searchProduct error:", error);
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      window.location.href = `${ROUTES.PRODUCTS}?q=${encodeURIComponent(searchTerm.trim())}`;
     }
   };
 
-  useEffect(() => {
-    searchProduct("milo");
-  }, []);
-
   return (
-    <>
-      <div className="fixed top-0 w-full h-auto px-3 md:px-5 py-4 md:py-4 bg-white flex flex-row items-center shadow-lg z-20">
-        <a className="w-20 md:w-1/5 md:mx-2 md:px-4 flex items-center" href="/">
+    <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-gray-100 z-20">
+      <div className="max-w-7xl mx-auto h-16 md:h-[68px] px-4 md:px-6 flex items-center gap-4">
+        <a className="flex-shrink-0" href="/">
           <img
             src="/img/OneStore logo.svg"
-            alt=""
-            className="w-auto h-auto mx-1 md:mx-2 object-cover"
+            alt="OneStore"
+            className="h-8 md:h-9 object-contain"
           />
         </a>
-        {/* <div className="w-2/3 md:w-2/3 mx-0 md:mx-auto px-auto flex flex-row items-center">
-          <input
-            type="text"
-            className="w-3/5 md:w-96 h-8 md:h-10 mx-4 mr-0 py-0 px-3 text-md text-gray-800 font-roboto outline-none rounded-l-full   border-2 border-gray-100 "
-            placeholder="search"
-            onChange={(e) => searchProduct(e.target.value)}
-          />
-          <input
-            type="button"
-            value="Search"
-            className="  h-8 md:h-10 mx-0 px-2 md:px-7   font-thin text-xs md:text-lg font-roboto text-white bg-Storepurple  hover:bg-purple-900  rounded-r-full "
-          />
-        </div> */}
-        <div className="w-2/4 md:w-2/3 mx-0 md:mx-auto px-auto flex flex-row items-center"></div>
-        {!exprLogin ? (
-          <div className="w-1/6 mx-auto  md:mx-4 px-1 pt-2 flex flex-row ">
-            <a className="w-auto mx-auto cursor-pointer" href={ROUTES.CART}>
-              <MdOutlineLocalGroceryStore size={32} className="mx-auto text-slate-700" />
-              {Cart && Cart.length > 0 && (
-                <div
-                  className=" relative top w-4 h-4 items-center bg-red-600 rounded-full"
-                  style={{ top: "-70%", right: "-65%" }}
-                >
-                  <p className=" text-center  text-[10px] font-roboto text-white ">
-                    {Cart.length}
-                  </p>
-                </div>
-              )}
-            </a>
-            <a
-              className="w-auto mx-auto ml-2 flex flex-col items-center cursor-pointer"
-              href={ROUTES.PROFILE}
-            >
-              <h1 className="w-auto mx-auto flex flex-row">
-                <MdPersonOutline size={32} className="text-slate-700" />
-              </h1>
-            </a>
+
+        <form
+          onSubmit={handleSearch}
+          className="flex flex-1 max-w-lg mx-2 md:mx-auto"
+        >
+          <div className="relative w-full">
+            <MdSearch
+              size={20}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+            />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search products..."
+              className="w-full pl-10 pr-4 py-2 md:py-2.5 text-sm font-roboto bg-gray-50 border border-gray-200 rounded-full outline-none transition-all focus:border-Storepurple focus:ring-2 focus:ring-purple-100"
+            />
           </div>
-        ) : (
-          <div className="w-2/6 md:1/5 mx-0 md:mx-4 flex flex-row items-center">
-            <a
-              className=" md:h-34 mr-1 md:mx-5 px-5 md:px-7 py-1.5 md:py-2 text-sm md:text-lg font-roboto text-white bg-Storepurple hover:bg-purple-900 rounded-full "
-              href={ROUTES.LOGIN}
-            >
-              Login
-            </a>
-            <a
-              className=" md:h-34 mr-1 md:mx-5 px-4 md:px-7 py-1.5 md:py-2 text-sm md:text-lg font-roboto text-white bg-Storepurple  hover:bg-purple-900  rounded-full "
-              href={ROUTES.SIGNUP}
-            >
-              Signup
-            </a>
-          </div>
-        )}
+        </form>
+
+        <div className="flex items-center ml-auto gap-3">
+          {loggedIn ? (
+            <div className="flex items-center gap-4">
+              <a
+                className="relative inline-flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
+                href={ROUTES.CART}
+              >
+                <MdOutlineLocalGroceryStore size={26} className="text-gray-700" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center bg-red-500 rounded-full">
+                    <span className="text-[10px] font-roboto font-bold text-white leading-none">
+                      {cartCount}
+                    </span>
+                  </span>
+                )}
+              </a>
+              <a
+                className="inline-flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
+                href={ROUTES.PROFILE}
+              >
+                <MdPersonOutline size={26} className="text-gray-700" />
+              </a>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2.5">
+              <a
+                className="px-5 py-2 text-sm font-roboto font-medium text-Storepurple border border-Storepurple rounded-full hover:bg-purple-50 transition-colors"
+                href={ROUTES.LOGIN}
+              >
+                Login
+              </a>
+              <a
+                className="px-5 py-2 text-sm font-roboto font-medium text-white bg-Storepurple rounded-full hover:bg-purple-800 transition-colors"
+                href={ROUTES.SIGNUP}
+              >
+                Sign up
+              </a>
+            </div>
+          )}
+        </div>
       </div>
-      {/* 
-      <div className="fixed top-16 left-0 right-0 w-3/6 h-auto mx-auto px-3 py-3 bg-white flex flex-col shadow-lg">
-        {searchResult &&
-          searchResult.map((n: any) => {
-            <a
-              className="mx-2 p-2 w-auto text-md font-roboto text-black list-none border-b-2 z-20"
-              href={`${ROUTES.PRODUCT}?${2}`}
-              key={n}
-            >
-              {searchResult[0].name}
-            </a>;
-          })}
-      </div> */}
-    </>
+    </nav>
   );
 };
 

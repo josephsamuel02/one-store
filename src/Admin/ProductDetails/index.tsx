@@ -1,100 +1,134 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ROUTES from "../../utils/Routes";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../DB/firebase";
+import { supabase } from "../../DB/supabase";
 import DefaultNav from "../components/AdminNav";
 
 const AdminProductDetails: React.FC = () => {
-  // const productId = new URLSearchParams(location.search).get("product_id");
   const { id } = useParams<{ id: string }>();
-  const [Product, setProduct] = useState<any>([]);
+  const navigate = useNavigate();
+  const adminToken = localStorage.getItem("one_store_admin");
   const priceFormat = new Intl.NumberFormat("en-US");
 
+  const [product, setProduct] = useState<any>(null);
+
   useEffect(() => {
-    const docRef = doc(db, "products", id!);
+    if (!adminToken) {
+      navigate(ROUTES.ADMIN_LOGIN);
+      return;
+    }
 
-    getDoc(docRef)
-      .then((docSnap) => {
-        if (docSnap.exists()) {
-          // Document found, you can access its data
+    const fetchProduct = async () => {
+      if (!id) return;
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
 
-          const data = docSnap.data();
-          setProduct([data]);
-        } else {
-          console.log("No such document!");
-        }
-      })
-      .catch((error) => {
-        console.error("Error getting document:", error);
-      });
-  }, []);
+      if (error) {
+        console.error("Failed to fetch product:", error);
+        return;
+      }
+      setProduct(data);
+    };
+
+    void fetchProduct();
+  }, [id]);
+
+  if (!product) {
+    return (
+      <div className="w-full min-h-screen bg-[#0c0e14]">
+        <DefaultNav />
+        <div className="flex items-center justify-center pt-32">
+          <div className="w-10 h-10 border-4 border-gray-700 border-t-purple-500 rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  const features: string[] = Array.isArray(product.features) ? product.features : [];
 
   return (
-    <div className="w-full h-screen bg-white overflow-y-scroll scrollbar-hide">
+    <div className="w-full min-h-screen bg-[#0c0e14]">
       <DefaultNav />
 
-      <div className="w-full md:w-11/12 p-4 mx-auto mt-12 md:mt-28 h-full flex flex-col">
-        <h3 className="mx-6 mb-4 text-2xl md:text-3xl text-slate-800 font-dayone">
-          Product Details
-        </h3>
+      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-24 md:pt-28 pb-12">
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-4 text-sm text-purple-400 font-roboto font-medium hover:underline"
+        >
+          &larr; Back
+        </button>
 
-        <div className="w-full  flex flex-col border-2 rounded">
-          {Product &&
-            Product.map((i: any, index: any) => (
-              <div
-                className="w-full h-auto mx-auto my-3 py-6 flex flex-col md:flex-row  bg-white"
-                key={index}
-              >
-                <div className="mx-auto w-3/5 md:w-2/5  flex flex-col md:flex-row">
-                  <img src={i.image} alt="" className="w-full h-52 object-contain rounded" />
-                </div>
+        <h1 className="text-2xl md:text-3xl font-dayone text-gray-100 mb-6">Product Details</h1>
 
-                <div className="p-2 md:w-4/5 h-auto flex flex-col">
-                  <p className="mx-3 py-3 text-lg font-roboto font-bold text-slate-800">
-                    Product Name:
-                    <span className="pl-2 font-roboto text-base font-normal">{i.name}</span>
-                  </p>
-                  <p className="mx-3 py-3 text-lg font-roboto font-bold text-slate-800">
-                    Price:
-                    <span className="pl-2 font-roboto text-xl font-normal">
-                      ₦{priceFormat.format(i.price)}
-                    </span>
-                  </p>
+        <div className="bg-gray-900 rounded-xl border border-gray-800/60 overflow-hidden flex flex-col md:flex-row">
+          <div className="md:w-2/5 bg-gray-800/40 flex items-center justify-center p-6">
+            <img
+              src={product.image}
+              alt={product.name}
+              className="w-full max-h-72 object-contain rounded-lg"
+            />
+          </div>
 
-                  <p className="mx-3 py-3 text-lg font-roboto font-bold text-slate-800">
-                    Quantity in stock:
-                    <span className="pl-2 font-roboto text-xl font-normal">{i.inStock}</span>
-                  </p>
+          <div className="flex-1 p-6 md:p-8 flex flex-col gap-4">
+            <div>
+              <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider">Name</p>
+              <p className="text-lg font-roboto font-bold text-gray-100">{product.name}</p>
+            </div>
 
-                  <p className="mx-3 py-3 text-lg font-roboto font-bold text-slate-800">
-                    Product Details:
-                    <span className=" pl-2 font-roboto text-base font-normal">
-                      {i.productDetails}
-                    </span>
-                  </p>
-
-                  {/* <ul className="mx-3 my-10 py-3 text-sm font-roboto text-slate-800 list-disc">
-                      <h3 className=" py-2 text-lg text-slate-800 font-roboto font-bold">
-                        Description & features
-                      </h3>
-                      {i.keyFeatures.map((i: string, index: number) => (
-                        <li className="py-1 font-roboto text-base" key={index}>
-                          {i}
-                        </li>
-                      ))}
-                    </ul> */}
-                  <a
-                    href={`${ROUTES.ADMIN_EDIT_PRODUCT}/${id}`}
-                    className="w-3/5 mx-auto py-3 text-lg text-center font-roboto text-white rounded bg-Storepurple hover:bg-purple-800 cursor-pointer"
-                  >
-                    Edit product
-                  </a>
-                </div>
+            <div className="flex flex-wrap gap-x-10 gap-y-4">
+              <div>
+                <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider">Price</p>
+                <p className="text-xl font-dayone text-gray-100">&#8358;{priceFormat.format(Number(product.price) || 0)}</p>
               </div>
-            ))}
+              {product.old_price && (
+                <div>
+                  <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider">Old Price</p>
+                  <p className="text-xl font-dayone text-gray-500 line-through">&#8358;{priceFormat.format(Number(product.old_price) || 0)}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider">Stock</p>
+                <p className="text-xl font-dayone text-gray-100">{product.stock ?? "—"}</p>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider">Category</p>
+              <p className="text-sm font-roboto text-gray-300">{product.category ?? "—"}</p>
+            </div>
+
+            <div>
+              <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider">Product ID</p>
+              <p className="text-xs font-roboto text-gray-600 font-mono">{product.id}</p>
+            </div>
+
+            <div>
+              <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider">Details</p>
+              <p className="text-sm font-roboto text-gray-300 leading-relaxed">{product.productDetails ?? "—"}</p>
+            </div>
+
+            {features.length > 0 && (
+              <div>
+                <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider mb-1">Features</p>
+                <ul className="list-disc list-inside space-y-1">
+                  {features.map((f, idx) => (
+                    <li key={idx} className="text-sm font-roboto text-gray-300">{f}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <a
+              href={`${ROUTES.ADMIN_EDIT_PRODUCT}/${id}`}
+              className="mt-4 w-full md:w-auto text-center px-8 py-3 text-base font-roboto font-bold text-white rounded-lg bg-purple-600 hover:bg-purple-700 transition-colors"
+            >
+              Edit Product
+            </a>
+          </div>
         </div>
       </div>
     </div>

@@ -1,276 +1,267 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-var */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import React, { useEffect, useState } from "react";
-import OrderConfirmedCard from "../../components/OrderConfirmedCard";
-import { getDocs, collection, addDoc, doc, deleteDoc, query, where } from "firebase/firestore";
-import { ToastContainer, toast } from "react-toastify";
-import { db } from "../../DB/firebase";
-
+import { toast, ToastContainer } from "react-toastify";
+import { supabase } from "../../DB/supabase";
+import ROUTES from "../../utils/Routes";
 import PayOfflineCard from "./payOfflineCard";
 
 interface AppComponent {
-  CheckOutData: any;
-  TotalPrice: any;
+  CheckOutData: any[];
+  TotalPrice: number;
 }
 
 const CheckoutDetails: React.FC<AppComponent> = ({ CheckOutData, TotalPrice }) => {
-  const Cart = CheckOutData;
   const token = localStorage.getItem("one_store_login");
   const priceFormat = new Intl.NumberFormat("en-US");
-  const [showCard, setShowCard] = useState(false);
-  const [TPrice, seTPrice] = useState(TotalPrice);
-  const [showOfflinePaymentCard, setShowOfflinePaymentCard] = useState(false);
 
-  const [userInfo, setUserInfo] = useState<any>({
-    name: "",
-    deliveryAddress: "",
-    phone: "",
-    alternativePhone: "",
-    whatsappNumber: "",
-  });
-  const [orderItem, setOrderItem] = useState<any>();
+  const [userInfo, setUserInfo] = useState<any>(null);
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [alternativePhone, setAlternativePhone] = useState("");
+  const [placing, setPlacing] = useState(false);
+  const [showOfflineCard, setShowOfflineCard] = useState(false);
+  const [orderId, setOrderId] = useState("");
 
-  // const TOTAL = TotalPrice * 100;
+  const computedTotal = CheckOutData.reduce(
+    (sum: number, p: any) => sum + (Number(p.price) || 0) * (Number(p.item_count) || 1),
+    0
+  );
 
   const fetchUser = async () => {
+    if (!token) return;
     try {
-      await getDocs(collection(db, "user")).then((querySnapshot) => {
-        const newData: any = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-        if (!newData) {
-          toast.warn("unable to login.", {
-            position: "top-left",
-          });
-        }
+      const { data, error } = await supabase
+        .from("user")
+        .select("*")
+        .eq("id", token)
+        .maybeSingle();
 
-        var index: any;
-
-        const user = newData.map((item: any) => {
-          return item.id === token ? (index = item) : null;
-        });
-        setUserInfo(index);
-
-        if (!user) {
-          toast.error("please login.", {
-            position: "top-left",
-          });
-          window.location.replace("/login");
-        }
-      });
+      if (error || !data) {
+        console.error("Unable to fetch user", error);
+        return;
+      }
+      setUserInfo(data);
     } catch (error) {
-      console.error(" Unable to login", error);
+      console.error("Unable to fetch user", error);
     }
   };
 
-  const addToOrder = async (paymentMedium: string) => {
+  const placeOrder = async (paymentMedium: string) => {
+    if (!token || !userInfo) {
+      toast.error("Please login first");
+      return;
+    }
+    if (!deliveryAddress.trim()) {
+      toast.warning("Please enter a delivery address");
+      return;
+    }
+
+    setPlacing(true);
     try {
-      const docRef = await addDoc(collection(db, "order"), {
-        ...orderItem,
-        ...userInfo,
-        paymentMedium: paymentMedium,
-      });
-      if (!docRef) {
-        toast.error("Error");
+      const orderRow = {
+        user_id: token,
+        products: CheckOutData,
+        total_price: computedTotal,
+        email: userInfo.email ?? null,
+        name: userInfo.name ?? null,
+        surname: userInfo.surname ?? null,
+        phone: userInfo.phone ?? null,
+        paymentMedium,
+        orderLevel: 0,
+      };
+
+      const { data: newOrder, error } = await supabase
+        .from("order")
+        .insert(orderRow)
+        .select("id")
+        .single();
+
+      if (error) {
+        console.error("Order error:", error);
+        toast.error("Failed to place order");
+        return;
+      }
+
+      setOrderId(newOrder.id);
+
+      const { data: cartRow } = await supabase
+        .from("cart")
+        .select("id")
+        .eq("user_id", token)
+        .maybeSingle();
+
+      if (cartRow) {
+        await supabase
+          .from("cart")
+          .update({ products: [] })
+          .eq("id", cartRow.id);
+      }
+
+      if (paymentMedium === "offline_payment") {
+        setShowOfflineCard(true);
       } else {
-        // Specify the collection where you want to search for documents
-        const targetRef = collection(db, "cart");
-        const q = query(targetRef, where("cartId", "==", token));
-
-        // Get the documents that match the query
-        getDocs(q)
-          .then((querySnapshot) => {
-            querySnapshot.forEach((document) => {
-              // Get the reference to the document
-              const docRef = doc(db, document.ref.path);
-
-              // Delete the document
-              deleteDoc(docRef)
-                .then(() => {
-                  console.log(" successful!");
-                })
-                .catch((error) => {
-                  toast.error("An error occurred");
-                  console.log(error);
-                });
-            });
-          })
-          .catch((error) => {
-            console.error("Error getting documents: ", error);
-          });
+        toast.success("Order placed successfully!");
+        setTimeout(() => {
+          window.location.href = ROUTES.ORDERS;
+        }, 1500);
       }
     } catch (error) {
-      toast.error("unable to order cart ");
+      console.error("Order error:", error);
+      toast.error("Failed to place order");
+    } finally {
+      setPlacing(false);
     }
   };
 
   useEffect(() => {
     if (!token) {
-      window.location.replace("/");
-      console.log(TotalPrice, Cart);
+      window.location.replace("/login");
+      return;
     }
-    const currDate = new Date().toLocaleDateString();
-    const currTime = new Date().toLocaleTimeString();
-    // console.log(currDate, currTime);
-    fetchUser();
-    setOrderItem({
-      Products: Cart,
-      userId: token,
-      totalPrice: TotalPrice,
-      orderLevel: 0,
-      date: `${currTime} at ${currDate}`,
-      OrderId: Math.floor(Math.random() * 1000000000),
-    });
+    void fetchUser();
   }, []);
 
-  useEffect(() => seTPrice(TotalPrice), [TotalPrice]);
-
-  // const config = {
-  //   reference: new Date().getTime().toString(),
-  //   email: "user@example.com",
-  //   amount: TOTAL, //Amount is in the country's lowest currency. E.g Kobo, so 20000 kobo = N200
-  //   publicKey: "pk_test_a507bd6845bb5cad347a591e06e88c6fde817cc1",
-  // };
-
-  // const onSuccess: any = () => {
-  //   addToOrder("online_payment");
-  //   delay(1300);
-  //   // setShowCard(true);
-  //   // delay(700);
-  //   window.location.replace(ROUTES.ORDERS);
-  // };
-
-  // const onClose: any = () => {
-  //   console.log("closed");
-  // };
-  // const initializePayment = usePaystackPayment(config);
-
   return (
-    <div className="mx-auto  w-full md:w-4/5 h-full bg-purple-50">
-      <h3 className="text-2xl  md:text-3xl p-4 text-black font-dayone ">Check Out</h3>
+    <div className="max-w-5xl mx-auto w-full py-4 px-2 md:px-0">
+      <h2 className="text-2xl md:text-3xl p-4 text-gray-900 font-dayone">Checkout</h2>
 
-      <div className="w-full px-2 h-full flex flex-col md:flex-row">
-        <div className="mx-auto my-2 md:my-0 py-2 w-full md:w-2/5 h-full flex flex-col bg-white rounded">
-          {Cart &&
-            Cart.map((i: any, index: number) => (
-              <div
-                className="mx-auto  w-11/12 h-auto my-2 flex flex-col bg-white rounded-sm shadow-md"
-                key={index}
-              >
-                <div className="w-full h-auto flex flex-row">
-                  <img src={i.image} alt={i.name} className="w-20 h-20 object-contain" />
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="w-full md:w-2/5 bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <h3 className="text-lg font-roboto font-bold text-gray-800 mb-3 pb-2 border-b border-gray-100">
+            Order Summary
+          </h3>
 
-                  <div className=" w-10/12  flex my-auto flex-col px-2 ">
-                    <h3 className="text-sm  truncate md:text-sm p-2 text-black font-roboto ">
-                      {i.name}
-                    </h3>
-
-                    <h3 className="text-sm  md:text-sm font-bold  py-2 text-slate-800 font-roboto">
-                      ₦{priceFormat.format(i.price)}
-                    </h3>
-                  </div>
-                </div>
+          {CheckOutData.map((item: any, index: number) => (
+            <div
+              key={index}
+              className="flex items-center gap-3 py-3 border-b border-gray-50 last:border-0"
+            >
+              <img
+                src={item.image}
+                alt={item.name}
+                className="w-16 h-16 rounded-lg object-contain bg-gray-50 flex-shrink-0"
+              />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-gray-700 font-roboto truncate">{item.name}</p>
+                <p className="text-xs text-gray-400 font-roboto">Qty: {item.item_count ?? 1}</p>
               </div>
-            ))}
-          <div className="mx-auto w-full  flex flex-row bg-white ">
-            <h3 className=" mx-auto text-xl   p-4 text-black font-roboto font-bold ">Total</h3>
-            <h4 className=" mx-auto text-xl   p-4 text-black font-roboto font-bold ">
-              ₦ {priceFormat.format(TotalPrice)}
-            </h4>
+              <p className="text-sm font-dayone text-gray-900 flex-shrink-0">
+                ₦{priceFormat.format((Number(item.price) || 0) * (Number(item.item_count) || 1))}
+              </p>
+            </div>
+          ))}
+
+          <div className="flex justify-between items-center pt-4 mt-2 border-t border-gray-200">
+            <span className="text-base font-roboto font-bold text-gray-800">Total</span>
+            <span className="text-xl font-dayone text-gray-900">
+              ₦{priceFormat.format(computedTotal)}
+            </span>
           </div>
         </div>
 
-        <div className="mx-auto md:mx-2 py-2 w-full md:w-3/5 h-auto bg-white ">
-          <h3 className="text-xl md:text-2xl   p-4 text-black font-roboto font-bold ">
-            Details
-          </h3>
-          <div className="mx-3  w-full    h-auto  ">
-            <p className="text-lg p-1 text-black font-roboto font-bold ">
-              Recepient:
-              <span className="font-normal text-black">
-                {userInfo.surname} {userInfo.name}
-              </span>
-            </p>
-            {/* <p className="text-lg  p-1 text-black font-roboto font-bold ">
-              Order Id: <span className="font-normal text-black">666848m848</span>
-            </p> */}
+        <div className="w-full md:w-3/5 bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <h3 className="text-lg font-roboto font-bold text-gray-800 mb-4">Delivery Details</h3>
 
-            <p className="text-lg  p-1 text-black font-roboto font-bold flex flex-row  items-center">
-              Contacts numbers:
-              <span className="mx-1 font-normal text-black">{userInfo.phone}</span>
-            </p>
-            <p className="text-sm p-1 text-black font-roboto  flex flex-col ">
-              whatsapp number(optional):
-              <textarea
-                draggable={false}
-                placeholder={"whatsapp number "}
-                onChange={(e) =>
-                  setUserInfo((prev: any) => ({ ...prev, whatsappNumber: e.target.value }))
-                }
-                className="  my-auto w-52 h-8 p-1  text-sm text-slate-800 font-normal focus:outline-none  resize-none no-scrollbar border-2 border-gray-300 rounded-md"
-              ></textarea>
-            </p>
-            <p className="text-sm p-1 text-black font-roboto  flex flex-col ">
-              Add alternative numbers:
-              <textarea
-                draggable={false}
-                placeholder={""}
-                onChange={(e) =>
-                  setUserInfo((prev: any) => ({ ...prev, alternativePhone: e.target.value }))
-                }
-                className="  my-auto w-52 h-8 p-1  text-sm text-slate-800 font-normal focus:outline-none  resize-none no-scrollbar border-2 border-gray-300 rounded-md"
-              ></textarea>
-            </p>
-            <p className="text-lg  p-1 text-black font-roboto font-bold flex flex-col">
-              Delivery address:
-              <textarea
-                draggable={false}
-                placeholder={"address... "}
-                onChange={(e) =>
-                  setUserInfo((prev: any) => ({ ...prev, deliveryAddress: e.target.value }))
-                }
-                className=" my-auto w-52 h-12 p-1  text-sm text-slate-800 font-normal focus:outline-none resize-none no-scrollbar border-2 border-gray-300 rounded-md"
-              ></textarea>
-            </p>
-          </div>
+          {userInfo && (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-roboto font-medium text-gray-600 mb-1">
+                  Recipient
+                </label>
+                <p className="text-base text-gray-900 font-roboto">
+                  {userInfo.surname} {userInfo.name}
+                </p>
+              </div>
 
-          <div className="m-6 p-2 w-10/11 h-auto border-2 border-yellow-300 bg-yellow-50 rounded-md">
-            <h3 className="text-xl m-2 text-black font-roboto font-bold ">Note</h3>
-            <p className="px-2 text-base font-roboto text-slate-900">
-              Orders will be sent via a delivery agent, delivery cost will be coved by buyer.
-              delivery cost can also be negotiated between buyer and delivery agent.
-            </p>
-          </div>
+              <div>
+                <label className="block text-sm font-roboto font-medium text-gray-600 mb-1">
+                  Email
+                </label>
+                <p className="text-base text-gray-900 font-roboto">{userInfo.email ?? "—"}</p>
+              </div>
 
-          <div className="mx-3 w-full h-auto  ">
-            <h3 className="text-lg m-4 text-black font-roboto font-bold ">Payment Method</h3>
-            <div
-              className="m-3  w-1/2 h-auto border-2 border-purple-400 bg-purple-100 hover:bg-purple-200 cursor-pointer  rounded"
-              onClick={() => {
-                // initializePayment(onSuccess, onClose);
-                toast("Online payment not available at the moment");
-              }}
-            >
-              <h3 className="text-xl p-4 text-black font-roboto font-bold ">Pay Online</h3>
+              <div>
+                <label className="block text-sm font-roboto font-medium text-gray-600 mb-1">
+                  Phone
+                </label>
+                <p className="text-base text-gray-900 font-roboto">{userInfo.phone ?? "—"}</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-roboto font-medium text-gray-600 mb-1">
+                  WhatsApp Number (optional)
+                </label>
+                <input
+                  type="tel"
+                  value={whatsappNumber}
+                  onChange={(e) => setWhatsappNumber(e.target.value)}
+                  placeholder="e.g. 08012345678"
+                  className="w-full px-3 py-2 text-sm font-roboto border border-gray-200 rounded-lg outline-none focus:border-Storepurple focus:ring-1 focus:ring-purple-100"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-roboto font-medium text-gray-600 mb-1">
+                  Alternative Phone (optional)
+                </label>
+                <input
+                  type="tel"
+                  value={alternativePhone}
+                  onChange={(e) => setAlternativePhone(e.target.value)}
+                  placeholder="e.g. 08012345678"
+                  className="w-full px-3 py-2 text-sm font-roboto border border-gray-200 rounded-lg outline-none focus:border-Storepurple focus:ring-1 focus:ring-purple-100"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-roboto font-medium text-gray-600 mb-1">
+                  Delivery Address <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={deliveryAddress}
+                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                  placeholder="Enter your full delivery address..."
+                  rows={3}
+                  className="w-full px-3 py-2 text-sm font-roboto border border-gray-200 rounded-lg outline-none resize-none focus:border-Storepurple focus:ring-1 focus:ring-purple-100"
+                />
+              </div>
             </div>
-            <div
-              onClick={() => {
-                setShowOfflinePaymentCard(true);
-                addToOrder("offline_payment");
-              }}
-              className="m-3  w-1/2 h-auto  border-2 border-purple-400 bg-purple-100 hover:bg-purple-200 cursor-pointer  rounded"
-            >
-              <h3 className="text-xl p-4 text-black font-roboto font-bold ">Pay Offline</h3>
+          )}
+
+          <div className="mt-5 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-xs text-yellow-800 font-roboto">
+              <strong>Note:</strong> Delivery cost will be covered by the buyer and can be negotiated
+              with the delivery agent.
+            </p>
+          </div>
+
+          <div className="mt-6">
+            <h4 className="text-base font-roboto font-bold text-gray-800 mb-3">Payment Method</h4>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                disabled={placing}
+                onClick={() => toast.info("Online payment not available at the moment")}
+                className="flex-1 py-3 px-4 text-sm font-roboto font-medium text-Storepurple border-2 border-Storepurple rounded-lg hover:bg-purple-50 transition-colors disabled:opacity-50"
+              >
+                Pay Online
+              </button>
+              <button
+                disabled={placing}
+                onClick={() => placeOrder("offline_payment")}
+                className="flex-1 py-3 px-4 text-sm font-roboto font-medium text-white bg-Storepurple rounded-lg hover:bg-purple-800 transition-colors disabled:opacity-50"
+              >
+                {placing ? "Placing Order..." : "Pay Offline"}
+              </button>
             </div>
           </div>
         </div>
       </div>
-      <OrderConfirmedCard showCard={showCard} setShowCard={setShowCard} />
-      {showOfflinePaymentCard && (
+
+      {showOfflineCard && (
         <PayOfflineCard
-          setShowCard={setShowOfflinePaymentCard}
-          TotalPrice={TPrice}
-          OrderId={orderItem.OrderId}
+          setShowCard={setShowOfflineCard}
+          TotalPrice={computedTotal}
+          OrderId={orderId}
         />
       )}
       <ToastContainer />

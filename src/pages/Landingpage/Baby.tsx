@@ -3,77 +3,81 @@ import React from "react";
 import ROUTES from "../../utils/Routes";
 import { MdShoppingCart } from "react-icons/md";
 
-import { getCart } from "../../Redux/Cart";
-
 interface AppComponent {
   Products: any;
-  addToCart: (data: object) => Promise<{ id: string; [key: string]: any } | string>;
+  addToCart: (data: any) => void;
 }
 
 const Baby: React.FC<AppComponent> = ({ Products, addToCart }) => {
   const priceFormat = new Intl.NumberFormat("en-US");
   const User = localStorage.getItem("one_store_login");
 
+  const filtered = Products
+    ? Products.filter((i: any) => i.category === "baby").slice(0, 10)
+    : [];
+
+  if (filtered.length === 0) return null;
+
   return (
-    <div className="my-8 w-full h-auto">
-      <div className="w-full h-auto py-5 flex flex-col border-y border-[#d7bfff] bg-white">
-        <p className=" text-4xl text-[#4303a8] text-center font-RubikDistressed ">Baby</p>
+    <section className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12">
+      <div className="flex items-center gap-3 mb-6 md:mb-8">
+        <div className="w-1 h-8 bg-Storepurple rounded-full" />
+        <h2 className="text-2xl md:text-3xl text-gray-900 font-dayone">Baby</h2>
       </div>
-      <div className="w-full h-auto my-1 px-0 md:px-5 py-1 md:py-3 grid grid-flow-row grid-cols-3 md:grid-cols-4 lg:grid-cols-5 bg-[#f0eaf52a] ">
-        {Products &&
-          Products.filter((i: any) => i.category === "baby")
-            .splice(0, 10)
-            .map((i: any, index: number) => (
-              <div
-                className="w-[125px] md:w-[180px] h-[223px] md:h-[270px]  mx-auto md:mx-auto my-6 md:my-10 p-1 rounded-lg items-center flex flex-col bg-white cursor-pointer shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-110"
-                key={index}
-              >
-                <a
-                  className="w-full h-auto mx-auto items-center flex flex-col"
-                  href={`${ROUTES.PRODUCT}/${i.id}`}
-                >
-                  <img
-                    src={i.image}
-                    alt="category"
-                    className="m-auto w-full h-36 md:h-44 object-contain"
-                  />
-                  <p className="w-full px-2 text-[10px] md:text-sm truncate  text-slate-8 text-center font-bold  ">
-                    {i.name}
-                  </p>
 
-                  <h2 className=" text-[10px] md:text-sm py-1 text-black flex flex-col md:flex-row items-center">
-                    ₦{priceFormat.format(i.price)}
-                    {i.old_price != 0 && (
-                      <span className="pl-2 text-slate-600 text-sm text-decoration-line: line-through font-normal  ">
-                        {i.old_price != i.price && `₦${priceFormat.format(i.old_price)}`}
-                      </span>
-                    )}
-                  </h2>
-
-                  {User && (
-                    <h2
-                      className=" w-full py-2  bg-[#4303a8] hover:bg-[#6d35c7] flex flex-row  items-center rounded cursor-pointer"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        const cartItem = { ...i, inStock: 1 };
-                        addToCart(cartItem);
-                        getCart();
-                        // console.log({ ...i, inStock: 1 });
-                      }}
-                    >
-                      <MdShoppingCart className="text-md text-white ml-auto" />
-
-                      <span className="mr-auto  pl-2 text-white text-[11px] md:text-sm   font-normal  ">
-                        Add to cart
-                      </span>
-                    </h2>
-                  )}
-                </a>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-5">
+        {filtered.map((i: any, index: number) => (
+          <div
+            className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md border border-gray-100 transition-all duration-300 hover:-translate-y-1"
+            key={index}
+          >
+            <a
+              className="flex flex-col h-full"
+              href={`${ROUTES.PRODUCT}/${i.id}`}
+            >
+              <div className="relative w-full aspect-square bg-gray-50 overflow-hidden">
+                <img
+                  src={i.image}
+                  alt={i.name}
+                  className="w-full h-full object-contain p-3 group-hover:scale-105 transition-transform duration-300"
+                />
               </div>
-            ))}
+
+              <div className="flex flex-col flex-1 p-3">
+                <p className="text-xs md:text-sm text-gray-700 font-roboto line-clamp-2 leading-snug mb-2">
+                  {i.name}
+                </p>
+
+                <div className="mt-auto">
+                  <p className="text-sm md:text-base font-dayone text-gray-900">
+                    ₦{priceFormat.format(i.price)}
+                  </p>
+                  {i.old_price != 0 && i.old_price != i.price && (
+                    <p className="text-xs text-gray-400 line-through font-roboto">
+                      ₦{priceFormat.format(i.old_price)}
+                    </p>
+                  )}
+                </div>
+
+                {User && (
+                  <button
+                    className="mt-2.5 w-full py-2 flex items-center justify-center gap-1.5 bg-Storepurple hover:bg-purple-800 text-white text-xs md:text-sm font-roboto font-medium rounded-lg transition-colors"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      addToCart({ ...i, inStock: 1 });
+                    }}
+                  >
+                    <MdShoppingCart size={16} />
+                    <span>Add to cart</span>
+                  </button>
+                )}
+              </div>
+            </a>
+          </div>
+        ))}
       </div>
-    </div>
+    </section>
   );
 };
 

@@ -1,49 +1,54 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getDocs, collection } from "firebase/firestore";
-import { db } from "../DB/firebase";
+import type { Session, User } from "@supabase/supabase-js";
+import { supabase } from "../DB/supabase";
 
-export const LoginUser = createAsyncThunk(
+type LoginPayload = {
+  user: User;
+  session: Session;
+  access_token: string;
+};
+
+export const LoginUser = createAsyncThunk<
+  LoginPayload,
+  { email: string; password: string },
+  { rejectValue: string }
+>(
   "auth/loginUser",
-  async ({ email, password }: { email: string; password: string }, { rejectWithValue }) => {
+  async ({ email, password }, { rejectWithValue }) => {
     try {
-      // Fetch all users from the Firestore collection
-      const querySnapshot = await getDocs(collection(db, "user"));
-      const users = querySnapshot.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-      }));
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      if (!users.length) {
-        return rejectWithValue("No users found.");
-      }
+      if (error) return rejectWithValue(error.message);
+      if (!data.session?.user) return rejectWithValue("No session returned.");
 
-      // Find the user with the matching email
-      const user = users.find((item: any) => item.email === email) as any;
-
-      if (!user) {
-        return rejectWithValue("User not found.");
-      }
-
-      // Check if the password matches
-      if (user.password !== password) {
-        return rejectWithValue("Incorrect login details.");
-      }
-
-      // Store user ID and login expiry in localStorage
-      const oneDayFromNow = new Date().getTime() + 1 * 24 * 60 * 60 * 1000;
+      const user = data.session.user;
       localStorage.setItem("one_store_login", user.id);
-      localStorage.setItem("login_expiry_date", `${oneDayFromNow}`);
+      localStorage.setItem(
+        "login_expiry_date",
+        String(Date.now() + 24 * 60 * 60 * 1000)
+      );
 
-      return user; // Return user object to update state
-    } catch (error) {
+      return {
+        user,
+        session: data.session,
+        access_token: data.session.access_token,
+      };
+    } catch {
       return rejectWithValue("Unable to login. Please try again.");
     }
   }
 );
 
-const initialState = {
-  user: {},
+const initialState: {
+  user: User | null;
+  token: string | null;
+  status: "idle" | "loading" | "succeeded" | "failed";
+  error: string | null;
+} = {
+  user: null,
   token: null,
   status: "idle",
   error: null,
@@ -53,7 +58,10 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    logout(state: any) {
+    logout(state) {
+      void supabase.auth.signOut();
+      localStorage.removeItem("one_store_login");
+      localStorage.removeItem("login_expiry_date");
       localStorage.removeItem("ASY_A_Token");
       state.user = null;
       state.token = null;
@@ -72,9 +80,9 @@ const authSlice = createSlice({
         state.token = action.payload.access_token;
         state.error = null;
       })
-      .addCase(LoginUser.rejected, (state: any, action) => {
+      .addCase(LoginUser.rejected, (state, action) => {
         state.status = "failed";
-        state.error = action.payload;
+        state.error = action.payload ?? "Login failed";
       });
   },
 });

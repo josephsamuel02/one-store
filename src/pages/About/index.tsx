@@ -2,51 +2,50 @@
 import React, { useEffect, useState } from "react";
 import DefaultNav from "../../components/DefaultNav";
 import Footer from "../../components/Footer";
-import { getDocs, collection } from "firebase/firestore";
-import { db } from "../../DB/firebase";
+import { supabase } from "../../DB/supabase";
 
 const About: React.FC = () => {
   const token = localStorage.getItem("one_store_login");
+  const [Cart, setCart] = useState<any[]>([]);
 
-  const [Cart, setCart] = useState<any>([]);
-
-  const getCartInfo = async () => {
-    try {
-      await getDocs(collection(db, "cart")).then((querySnapshot) => {
-        const newData: any = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-        if (newData) {
-          const d: any = [];
-          newData.map((item: any) => {
-            return item.cartId == token ? d.push(item) : null;
-          });
-          console.log(d.length);
-          setCart(d);
-        }
-      });
-    } catch (error) {
-      console.error(" Unable to get cart", error);
-    }
-  };
   useEffect(() => {
-    getCartInfo();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const getCartInfo = async () => {
+      if (!token) return;
+      try {
+        const { data, error } = await supabase
+          .from("cart")
+          .select("id, products")
+          .eq("user_id", token)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Unable to get cart", error);
+          return;
+        }
+        setCart(data?.products ?? []);
+      } catch (error) {
+        console.error("Unable to get cart", error);
+      }
+    };
+    void getCartInfo();
+  }, [token]);
+
   return (
     <>
       <DefaultNav Cart={Cart} />
-      <div className="w-full h-full mb-4 md:mb-36 py-5 md:py-20 px-0 md:px-20 lg:px-40 bg-bg1 bg-center bg-cover bg-no-repeat flex flex-col ">
-        <div className="mt-20 px-6 md:px-20 pb-20 mx-auto w-11/12 md:w-full h-auto   bg-white rounded-sm md:rounded-xl shadow-lg">
+      <div className="w-full h-full mb-4 md:mb-36 py-5 md:py-20 px-0 md:px-20 lg:px-40 bg-bg1 bg-center bg-cover bg-no-repeat flex flex-col">
+        <div className="mt-20 px-6 md:px-20 pb-20 mx-auto w-11/12 md:w-full h-auto bg-white rounded-sm md:rounded-xl shadow-lg">
           <img
             src="/img/OneStore logo.svg"
             alt="company logo"
-            className=" my-6 mx-auto w-36 h-auto"
+            className="my-6 mx-auto w-36 h-auto"
           />
 
-          <h2 className=" text-xl  py-4 md:py-5 md:pt-8  font-bold text-[#e30202] text-center ">
+          <h2 className="text-xl py-4 md:py-5 md:pt-8 font-bold text-[#e30202] text-center">
             About Us
           </h2>
 
-          <h2 className=" text-base md:text-2xl font-bold  text-[#e30202]  pb-4 pt-10 uppercase">
+          <h2 className="text-base md:text-2xl font-bold text-[#e30202] pb-4 pt-10 uppercase">
             Welcome to One Store
           </h2>
           <p className="text-base text-gray-900 leading-9">
@@ -57,7 +56,7 @@ const About: React.FC = () => {
             better way to shop online.
           </p>
 
-          <h2 className=" text-base md:text-2xl font-bold  text-[#e30202]  pb-4 pt-10 uppercase">
+          <h2 className="text-base md:text-2xl font-bold text-[#e30202] pb-4 pt-10 uppercase">
             OUR CORE VALUES
           </h2>
           <p className="text-base text-gray-900 leading-9">
@@ -76,7 +75,7 @@ const About: React.FC = () => {
             dignity, equality and trust.
           </p>
 
-          <h2 className=" text-base md:text-2xl font-bold  text-[#e30202]  pb-4 pt-10 uppercase">
+          <h2 className="text-base md:text-2xl font-bold text-[#e30202] pb-4 pt-10 uppercase">
             Teamwork
           </h2>
           <p className="text-base text-gray-900 leading-9">

@@ -5,52 +5,62 @@ import ProductCard from "./ProductCard";
 import ProductDetails from "./ProductDetails";
 import Footer from "../../components/Footer";
 import { useParams } from "react-router-dom";
-import { db } from "../../DB/firebase";
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import { supabase } from "../../DB/supabase";
 
 const Product: React.FC = () => {
-  const token = localStorage.getItem("one_store_login");
+  const { id } = useParams();
+  const [Cart, setCart] = useState<any[]>([]);
+  const [singleProduct, setSingleProduct] = useState<any>(null);
 
-  const { id }: any = useParams();
-  const [Cart, setCart] = useState<any>([]);
-
-  const [singleProduct, setSingleProduct] = useState<any>();
   const getCartInfo = async () => {
+    const token = localStorage.getItem("one_store_login");
+    if (!token) {
+      setCart([]);
+      return;
+    }
     try {
-      await getDocs(collection(db, "cart")).then((querySnapshot) => {
-        const newData: any = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-        if (newData) {
-          const d: any = [];
-          newData.map((item: any) => {
-            return item.cartId == token ? d.push(item) : null;
-          });
-          setCart(d);
-        }
-      });
+      const { data, error } = await supabase
+        .from("cart")
+        .select("products")
+        .eq("user_id", token)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Unable to get cart", error);
+        return;
+      }
+      setCart(data?.products ?? []);
     } catch (error) {
-      console.error(" Unable to get cart", error);
+      console.error("Unable to get cart", error);
     }
   };
 
   const getProductById = async () => {
+    if (!id) return;
     try {
-      const Ref = await getDoc(doc(db, "products", id));
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
 
-      if (Ref.exists()) {
-        setSingleProduct(Ref.data());
+      if (error) {
+        console.error("Error getting product:", error);
+        return;
       }
+      setSingleProduct(data);
     } catch (error) {
-      console.error("Error getting document:", error);
+      console.error("Error getting product:", error);
     }
   };
 
   useEffect(() => {
-    getProductById();
-    getCartInfo();
-  }, []);
+    void getProductById();
+    void getCartInfo();
+  }, [id]);
 
   return (
-    <div className="w-full h-full pt-16 md:pt-24  bg-purple-100">
+    <div className="w-full h-full pt-16 md:pt-24 bg-purple-100">
       <DefaultNav Cart={Cart} />
       <ProductCard singleProduct={singleProduct} getCartInfo={getCartInfo} />
       <ProductDetails singleProduct={singleProduct} />

@@ -4,74 +4,60 @@ import DefaultNav from "../../components/DefaultNav";
 import Footer from "../../components/Footer";
 import OrderItems from "./OrderItems";
 import { useNavigate } from "react-router-dom";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { toast } from "react-toastify";
-import { db } from "../../DB/firebase";
+import { supabase } from "../../DB/supabase";
 
 const Orders: React.FC = () => {
   const token = localStorage.getItem("one_store_login");
-  const Navigate = useNavigate();
-  const [Orders, setOrders] = useState<any>("");
-  const [totalPrice, setTotalPrice] = useState(0);
+  const navigate = useNavigate();
+  const [orders, setOrders] = useState<any[]>([]);
+  const [cart, setCart] = useState<any[]>([]);
+
   const getOrders = async () => {
+    if (!token) return;
     try {
-      const targetRef = collection(db, "order");
-      const q = query(targetRef, where("userId", "==", token));
+      const { data, error } = await supabase
+        .from("order")
+        .select("*")
+        .eq("user_id", token)
+        .order("created_at", { ascending: false });
 
-      await getDocs(q).then((querySnapshot) => {
-        const newData: any = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-        if (newData) {
-          setOrders(newData);
-        }
-        let t = 0;
-
-        for (let i = 0; i < newData.Products.length; i++) {
-          const productTotal = newData.Products[i].inStock * newData.Products[i].price;
-          t += productTotal;
-        }
-        setTotalPrice(t);
-      });
+      if (error) {
+        console.error("Unable to get orders", error);
+        return;
+      }
+      setOrders(data ?? []);
     } catch (error) {
-      console.log(error);
-      toast.warning(" Unable to login");
+      console.error("Unable to get orders", error);
     }
   };
-
-  const [Cart, setCart] = useState<any>([]);
 
   const getCartInfo = async () => {
+    if (!token) return;
     try {
-      await getDocs(collection(db, "cart")).then((querySnapshot) => {
-        const newData: any = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-        if (newData) {
-          const d: any = [];
-          newData.map((item: any) => {
-            return item.cartId == token ? d.push(item) : null;
-          });
-          console.log(d.length);
-          setCart(d);
-        }
-      });
+      const { data } = await supabase
+        .from("cart")
+        .select("products")
+        .eq("user_id", token)
+        .maybeSingle();
+      setCart(data?.products ?? []);
     } catch (error) {
-      console.error(" Unable to get cart", error);
+      console.error("Unable to get cart", error);
     }
   };
-  useEffect(() => {
-    getCartInfo();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     if (!token) {
-      Navigate("/login");
+      navigate("/login");
+      return;
     }
-    getOrders();
+    void getOrders();
+    void getCartInfo();
   }, []);
 
   return (
-    <div className="w-full h-full pt-16 md:pt-20 bg-purple-100">
-      <DefaultNav Cart={Cart} />
-      <OrderItems Orders={Orders} totalPrice={totalPrice} />
+    <div className="w-full min-h-screen pt-20 md:pt-[72px] bg-gray-50">
+      <DefaultNav Cart={cart} />
+      <OrderItems orders={orders} />
       <Footer />
     </div>
   );

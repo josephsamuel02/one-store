@@ -1,233 +1,167 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import { MdEdit } from "react-icons/md";
-import Footer from "../../components/Footer";
-import DefaultNav from "../../components/DefaultNav";
+import AdminNav from "../components/AdminNav";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import delay from "delay";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "../../DB/firebase";
+import { supabase } from "../../DB/supabase";
 import { useNavigate } from "react-router-dom";
+import ROUTES from "../../utils/Routes";
 
 const AdminProfile: React.FC = () => {
-  const token = localStorage.getItem("one_store_login");
-  const Navigate = useNavigate();
-  // const Navigate = useNavigate();
-  const [edit, setEdit] = useState<any>(false);
-  const [updatedUser, setUpdatedUser] = useState<any>();
+  const navigate = useNavigate();
+  const [edit, setEdit] = useState(false);
+  const [updatedUser, setUpdatedUser] = useState<any>(null);
+  const [userInfo, setUserInfo] = useState<any>({});
+  const [loading, setLoading] = useState(true);
 
-  const [userInfo, setUserInfo] = useState<any>({
-    ...useState,
-  });
+  const loadProfile = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("one_store_admin");
+      if (!token) {
+        navigate(ROUTES.ADMIN_LOGIN);
+        return;
+      }
 
-  const submit = async (e: any) => {
-    e.preventDefault();
+      const { data, error } = await supabase
+        .from("user")
+        .select("*")
+        .eq("id", token)
+        .maybeSingle();
 
-    const docRef = doc(db, "user", token!);
-
-    // Data to update
-    const newData = {
-      ...userInfo,
-    };
-
-    updateDoc(docRef, newData)
-      .then(async () => {
-        toast.success("Document updated successfully!");
-        delay(2000);
-        window.location.reload();
-      })
-      .catch((error) => {
-        toast.error("Error updating document");
-        console.log(error);
-        delay(1300);
-        window.location.reload();
-      });
+      if (error || !data) {
+        console.error("Failed to load admin profile:", error);
+        toast.error("Unable to load profile");
+        return;
+      }
+      setUpdatedUser(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    const docRef = doc(db, "user", token!);
-
-    getDoc(docRef)
-      .then((docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setUpdatedUser(data);
-        } else {
-          console.log("No such document!");
-        }
-      })
-      .catch((error) => {
-        console.error("Error getting document:", error);
-        Navigate("/");
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    void loadProfile();
   }, []);
 
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = localStorage.getItem("one_store_admin");
+    if (!token) return;
+
+    const payload = {
+      id: token,
+      surname: userInfo.surname ?? updatedUser?.surname ?? "",
+      name: userInfo.name ?? updatedUser?.name ?? "",
+      email: userInfo.email ?? updatedUser?.email ?? "",
+      phone: userInfo.phone ?? updatedUser?.phone ?? "",
+      state: userInfo.state ?? updatedUser?.state ?? "",
+      address: userInfo.address ?? updatedUser?.address ?? "",
+      lga: userInfo.lga ?? updatedUser?.lga ?? "",
+    };
+
+    const { error } = await supabase.from("user").upsert(payload, { onConflict: "id" });
+
+    if (error) {
+      console.error(error);
+      toast.error(error.message);
+      return;
+    }
+
+    toast.success("Profile updated successfully");
+    setEdit(false);
+    setUserInfo({});
+    await loadProfile();
+  };
+
+  if (loading || !updatedUser) {
+    return (
+      <div className="w-full min-h-screen bg-[#0c0e14]">
+        <AdminNav />
+        <div className="flex items-center justify-center pt-32">
+          <div className="w-10 h-10 border-4 border-gray-700 border-t-purple-500 rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  const fields = [
+    { label: "Surname", key: "surname" },
+    { label: "Name", key: "name" },
+    { label: "Email", key: "email", type: "email" },
+    { label: "Phone", key: "phone", type: "tel" },
+    { label: "State", key: "state" },
+    { label: "Delivery Address", key: "address" },
+    { label: "LGA", key: "lga" },
+  ];
+
   return (
-    <>
-      <DefaultNav Cart={[]} />
+    <div className="w-full min-h-screen bg-[#0c0e14]">
+      <AdminNav />
 
-      <div className="mx-auto w-full md:w-5/6 h-full mt-20 bg-white overflow-y-scroll scrollbar-hide items-center">
-        <div className="mx-auto w-full md:w-96 p-2 mt-16 h-full flex flex-col items-center rounded-md md:shadow-lg">
-          <h3 className=" mx-auto text-3xl text-purple-800 font-dayone"> Admin Profile</h3>
-          {edit && (
-            <form
-              action=""
-              onSubmit={submit}
-              className="w-4/5 mx-auto md:px-2 md:mx-4 my-1 py-1 flex flex-col items-center"
-            >
-              <div className="w-full mx-auto  my-1 py-1 flex flex-col items-center ">
-                <div className="w-full mx-auto my-1 py-1 flex flex-col">
-                  <label className="text-lg text-gray-700 font-nunito"> Surname:</label>
-                  <input
-                    type="text"
-                    placeholder={updatedUser.surname}
-                    onChange={(e) =>
-                      setUserInfo((prev: any) => ({ ...prev, surname: e.target.value }))
-                    }
-                    className=" mx-auto w-full h-10 px-3 text-nunito text-lg text-slate-700 border-2 outline-none border-slate-300 rounded shadow-sm"
-                  />
-                </div>
-                <div className="w-full mx-auto my-1 py-1 flex flex-col">
-                  <label className="text-lg text-gray-700 font-nunito"> Middle name:</label>
-                  <input
-                    type="text"
-                    placeholder={updatedUser.name}
-                    onChange={(e) =>
-                      setUserInfo((prev: any) => ({ ...prev, name: e.target.value }))
-                    }
-                    className=" mx-auto w-full h-10 px-3 text-nunito text-lg text-slate-700 border-2 outline-none border-slate-300 rounded shadow-sm"
-                  />
-                </div>
-                <div className="w-full mx-auto my-1 py-1 flex flex-col">
-                  <label className="text-lg text-gray-700 font-nunito"> Email:</label>
-                  <input
-                    type="email"
-                    placeholder={updatedUser.email}
-                    onChange={(e) =>
-                      setUserInfo((prev: any) => ({ ...prev, email: e.target.value }))
-                    }
-                    className=" mx-auto w-full h-10 px-3 text-nunito text-lg text-slate-700 border-2 outline-none border-slate-300 rounded shadow-sm"
-                  />
-                </div>
-                <div className="w-full mx-auto my-1 py-1 flex flex-col">
-                  <label className="text-lg text-gray-700 font-nunito"> Phone:</label>
-                  <input
-                    type="tel"
-                    pattern="[0-9]{11}"
-                    minLength={11}
-                    maxLength={11}
-                    placeholder={updatedUser.phone}
-                    onChange={(e) =>
-                      setUserInfo((prev: any) => ({ ...prev, phone: e.target.value }))
-                    }
-                    className=" mx-auto w-full h-10 px-3 text-nunito text-lg text-slate-700 border-2 outline-none border-slate-300 rounded shadow-sm"
-                  />
-                </div>
+      <div className="max-w-lg mx-auto px-4 pt-24 md:pt-28 pb-12">
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-4 text-sm text-purple-400 font-roboto font-medium hover:underline"
+        >
+          &larr; Back to dashboard
+        </button>
 
-                <div className="w-full mx-auto my-1 py-1 flex flex-col">
-                  <label className="text-lg text-gray-700 font-nunito"> State:</label>
-                  <input
-                    type="text"
-                    placeholder={updatedUser.state}
-                    onChange={(e) =>
-                      setUserInfo((prev: any) => ({ ...prev, state: e.target.value }))
-                    }
-                    className=" mx-auto w-full h-10 px-3 text-nunito text-lg text-slate-700 border-2 outline-none border-slate-300 rounded shadow-sm"
-                  />
-                </div>
-                <div className="w-full mx-auto my-1 py-1 flex flex-col">
-                  <label className="text-lg text-gray-700 font-nunito">
-                    {" "}
-                    Delivery Address:
-                  </label>
-                  <input
-                    type="text"
-                    placeholder={updatedUser.address}
-                    onChange={(e) =>
-                      setUserInfo((prev: any) => ({ ...prev, address: e.target.value }))
-                    }
-                    className=" mx-auto w-full h-10 px-3 text-nunito text-lg text-slate-700 border-2 outline-none border-slate-300 rounded shadow-sm"
-                  />
-                </div>
-                <div className="w-full mx-auto my-1 py-1 flex flex-col">
-                  <label className="text-lg text-gray-700 font-nunito"> LGA:</label>
-                  <input
-                    type="text"
-                    placeholder={updatedUser.lga}
-                    onChange={(e) =>
-                      setUserInfo((prev: any) => ({ ...prev, lga: e.target.value }))
-                    }
-                    className=" mx-auto w-full h-10 px-3 text-nunito text-lg text-slate-700 border-2 outline-none border-slate-300 rounded shadow-sm"
-                  />
-                </div>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-dayone text-gray-100">Admin Profile</h1>
+          <button
+            onClick={() => { setEdit(!edit); setUserInfo({}); }}
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-600 text-white hover:bg-purple-700 transition-colors shadow-md shadow-purple-600/20"
+          >
+            <MdEdit size={20} />
+          </button>
+        </div>
 
-                <div className="w-full mx-auto my-1 py-1 flex flex-col">
-                  <button
-                    type="submit"
-                    className=" mx-auto w-full py-2 text-center text-nunito text-2xl text-white bg-purple-700 hover:bg-purple-800 rounded cursor-pointer"
-                  >
-                    Save
-                  </button>
-                </div>
-              </div>
-            </form>
+        <div className="bg-gray-900 rounded-xl border border-gray-800/60 p-6">
+          {updatedUser.role === "admin" && (
+            <div className="mb-4 inline-block px-3 py-1 text-xs font-roboto font-bold text-purple-400 bg-purple-500/15 rounded-full">
+              Admin
+            </div>
           )}
-          {!edit && updatedUser && (
-            <div className="w-4/5 mx-auto md:px-2 md:mx-4 my-1 py-1 flex flex-col items-center ">
-              <div className="w-full mx-auto my-1 py-1 flex flex-col">
-                <label className="text-lg text-gray-700 font-nunito"> User name:</label>
-                <p className=" mx-0text-nunito text-lg text-gray-700">
-                  {`${updatedUser.surname} ${updatedUser.name}`}
-                </p>
-              </div>
-              <div className="w-full mx-auto my-1 py-1 flex flex-col">
-                <label className="text-lg text-gray-700 font-nunito"> Email:</label>
-                <p className=" mx-0text-nunito text-lg text-gray-700">{updatedUser.email}</p>
-              </div>
-              <div className="w-full mx-auto my-1 py-1 flex flex-col">
-                <label className="text-lg text-gray-700 font-nunito"> Phone:</label>
-                <p className=" mx-0text-nunito text-lg text-gray-700">{updatedUser.phone}</p>
-              </div>
 
-              <div className="w-full mx-auto my-1 py-1 flex flex-col">
-                <label className="text-lg text-gray-700 font-nunito"> State:</label>
-                <p className=" mx-0text-nunito text-lg text-gray-700">{updatedUser.state}</p>
-              </div>
-
-              <div className="w-full mx-auto my-1 py-1 flex flex-col">
-                <label className="text-lg text-gray-700 font-nunito"> LGA:</label>
-                <p className=" mx-0text-nunito text-lg text-gray-700">{updatedUser.lga}</p>
-              </div>
-              <div className="w-full mx-auto my-1 py-1 flex flex-col">
-                <label className="text-lg text-gray-700 font-nunito"> Delivery Address:</label>
-                <p className=" mx-0text-nunito text-lg text-gray-700">{updatedUser.address}</p>
-              </div>
-              {updatedUser.role == "admin" && (
-                <div className="w-full mx-auto my-1 py-1 flex flex-col">
-                  <label className="text-lg text-gray-700 font-nunito"> Role:</label>
-                  <p className=" mx-0text-nunito text-lg text-gray-700">{updatedUser.role}</p>
+          {edit ? (
+            <form onSubmit={submit} className="space-y-4">
+              {fields.map((f) => (
+                <div key={f.key}>
+                  <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">{f.label}</label>
+                  <input
+                    type={f.type ?? "text"}
+                    defaultValue={updatedUser[f.key] ?? ""}
+                    onChange={(e) => setUserInfo((prev: any) => ({ ...prev, [f.key]: e.target.value }))}
+                    className="w-full p-3 text-sm font-roboto text-gray-200 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                  />
                 </div>
-              )}
+              ))}
+              <button
+                type="submit"
+                className="w-full py-3 text-base font-roboto font-bold text-white rounded-lg bg-purple-600 hover:bg-purple-700 transition-colors"
+              >
+                Save Changes
+              </button>
+            </form>
+          ) : (
+            <div className="space-y-3">
+              {fields.map((f) => (
+                <div key={f.key}>
+                  <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider">{f.label}</p>
+                  <p className="text-sm font-roboto text-gray-200">{updatedUser[f.key] || "—"}</p>
+                </div>
+              ))}
             </div>
           )}
         </div>
-
-        <div
-          className="   mx-6 w-16 h-16 md:w-20  md:h-20  flex flex-col items-center bg-purple-700  hover:bg-purple-800 rounded-full cursor-pointer z-20"
-          onClick={() => {
-            setEdit(!edit);
-          }}
-        >
-          <h2 className=" m-auto text-center text-nunito text-2xl text-white">
-            <MdEdit color="white" size={32} />
-          </h2>
-        </div>
       </div>
-      <Footer />
-      <ToastContainer />
-    </>
+
+      <ToastContainer theme="dark" />
+    </div>
   );
 };
 

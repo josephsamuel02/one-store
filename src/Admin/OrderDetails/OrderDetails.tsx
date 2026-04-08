@@ -1,205 +1,213 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getDocs, collection, doc, updateDoc } from "firebase/firestore";
-import { db } from "../../DB/firebase";
+import { supabase } from "../../DB/supabase";
 import ROUTES from "../../utils/Routes";
 import DefaultNav from "../components/AdminNav";
-import Footer from "../../components/Footer";
-import delay from "delay";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+
+const ORDER_STATUSES: Record<number, { label: string; color: string }> = {
+  0: { label: "Pending", color: "bg-yellow-500" },
+  1: { label: "Confirmed", color: "bg-purple-500" },
+  2: { label: "Shipped", color: "bg-blue-500" },
+  3: { label: "Completed", color: "bg-green-500" },
+};
 
 const AdminOrderDetails: React.FC = () => {
-  const { id }: any = useParams();
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const adminToken = localStorage.getItem("one_store_admin");
   const priceFormat = new Intl.NumberFormat("en-US");
 
-  const adminToken = localStorage.getItem("one_store_admin");
-  const Navigate = useNavigate();
-  const [Orders, setOrders] = useState<any>();
-  // const [newValue, setNewValue] = useState<any>();
+  const [order, setOrder] = useState<any>(null);
+  const [advancing, setAdvancing] = useState(false);
 
-  const fetchOrders = async () => {
-    await getDocs(collection(db, "order")).then((querySnapshot) => {
-      const newData: any = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-      setOrders(newData[id]);
-      // setNewValue(newData[id]);
-    });
+  const fetchOrder = async () => {
+    if (!id) return;
+    try {
+      const { data, error } = await supabase
+        .from("order")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Failed to fetch order:", error);
+        return;
+      }
+      setOrder(data);
+    } catch (error) {
+      console.error("Failed to fetch order:", error);
+    }
   };
 
-  const UploadProduct = async (e: any) => {
-    e.preventDefault();
+  const advanceOrderLevel = async () => {
+    if (!order || order.orderLevel >= 3) return;
+    setAdvancing(true);
+    try {
+      const newLevel = order.orderLevel + 1;
+      const { error } = await supabase
+        .from("order")
+        .update({ orderLevel: newLevel })
+        .eq("id", order.id);
 
-    const docRef = doc(db, "order", Orders.id);
-    updateDoc(docRef, { ...Orders, orderLevel: Orders.orderLevel + 1 })
-      .then(async () => {
-        toast.success("Document updated successfully!");
-        delay(2000);
-        window.location.reload();
-      })
-      .catch((error) => {
-        toast.error("Error updating document");
-        console.log(error);
-        delay(1300);
-        window.location.reload();
-      });
+      if (error) {
+        toast.error("Failed to update order status");
+        console.error(error);
+        return;
+      }
+      toast.success(`Order marked as ${ORDER_STATUSES[newLevel]?.label}`);
+      setOrder({ ...order, orderLevel: newLevel });
+    } catch (error) {
+      toast.error("Failed to update order status");
+      console.error(error);
+    } finally {
+      setAdvancing(false);
+    }
   };
+
   useEffect(() => {
     if (!adminToken) {
-      Navigate(ROUTES.ADMIN_LOGIN);
+      navigate(ROUTES.ADMIN_LOGIN);
+      return;
     }
-    fetchOrders();
-  }, []);
+    void fetchOrder();
+  }, [id]);
 
-  return (
-    <>
-      <div className="w-full h-screen bg-white overflow-y-scroll scrollbar-hide">
+  if (!order) {
+    return (
+      <div className="w-full min-h-screen bg-[#0c0e14]">
         <DefaultNav />
-        <div className="w-full md:w-11/12 p-4 mx-auto mt-12 md:mt-28 h-full flex flex-col">
-          <h3 className="mx-6 mb-4 text-2xl   text-slate-800 font-dayone">Order Details</h3>
-
-          {Orders && (
-            <div className="w-full py-10 flex flex-col border-2">
-              <h3 className="mx-6 py-2 text-base   text-slate-800 font-roboto font-bold">
-                Customer Name:
-                <span className="px-2 font-normal">
-                  {Orders.surname} {Orders.name}
-                </span>
-              </h3>
-
-              <h3 className="mx-6 py-2 text-base   text-slate-800 font-roboto font-bold">
-                Customer Phone:
-                <span className="px-2 font-normal">{Orders.email}</span>
-              </h3>
-
-              <h3 className="mx-6 py-2 text-base   text-slate-800 font-roboto font-bold">
-                Customer Phone:
-                <span className="px-2 font-normal">{Orders.phone}</span>
-              </h3>
-
-              <h3 className="mx-6 py-2 text-base   text-slate-800 font-roboto font-bold">
-                Alternative phone lines:
-                <span className="px-2 font-normal">{Orders.alternativePhone}</span>
-              </h3>
-
-              <h3 className="mx-6 py-2 text-base   text-slate-800 font-roboto font-bold">
-                Whatsapp line:
-                <span className="px-2 font-normal">{Orders.whatsappNumber}</span>
-              </h3>
-              <h3 className="mx-6 py-2 text-base   text-slate-800 font-roboto font-bold">
-                Order ID: <span className="px-2 font-normal">{Orders.id}</span>
-              </h3>
-              <h3 className="mx-6 py-2 text-base   text-slate-800 font-roboto font-bold">
-                Delivery address:
-                <span className="px-2 font-normal">{Orders.deliveryAddress}</span>
-              </h3>
-              <h3 className="mx-6 py-2 text-base   text-slate-800 font-roboto font-bold">
-                Total price:
-                <span className="px-2 font-normal">
-                  ₦{priceFormat.format(Orders.totalPrice)}
-                </span>
-              </h3>
-              <h3 className="mx-6 py-2 text-base   text-slate-800 font-roboto font-bold items-center flex flex-row flex-wrap">
-                Status:
-                {Orders.orderLevel == 0 && (
-                  <span className=" mx-2 my-1 px-4 py-1 text-sm md:text-base text-black hover:text-white font-normal bg-yellow-300 hover:bg-yellow-700 shadow-md rounded cursor-pointer">
-                    Pending
-                  </span>
-                )}
-                {Orders.orderLevel == 1 && (
-                  <span className=" mx-2 my-1 px-4 py-1 text-sm md:text-base  text-white font-normal bg-purple-500 hover:bg-purple-700 shadow-md rounded cursor-pointer">
-                    Confirmed
-                  </span>
-                )}
-                {Orders.orderLevel == 2 && (
-                  <span className=" mx-2 my-1 px-4 py-1 text-sm md:text-base  text-white font-normal bg-blue-500 hover:bg-blue-700 shadow-md rounded cursor-pointer">
-                    Shipped
-                  </span>
-                )}
-                {Orders.orderLevel == 3 && (
-                  <span className=" mx-2 my-1 px-4 py-1 text-sm md:text-base  text-white font-normal bg-green-500 hover:bg-green-700 shadow-md rounded cursor-pointer">
-                    Complete
-                  </span>
-                )}
-                {Orders.orderLevel < 3 && "Next ->>"}
-                {Orders.orderLevel < 3 && (
-                  <span
-                    className=" mx-2 my-1 px-4 py-1 text-sm md:text-base  text-black font-normal bg-white hover:bg-[#d8d6d6ad] shadow-md rounded cursor-pointer"
-                    onClick={(e) => {
-                      UploadProduct(e);
-                    }}
-                  >
-                    {Orders.orderLevel == 0
-                      ? "Confirmed"
-                      : Orders.orderLevel == 1
-                      ? "Shipped"
-                      : Orders.orderLevel == 2
-                      ? "Complete"
-                      : null}
-                  </span>
-                )}
-              </h3>
-              <h3 className="mx-6 py-2 text-base   text-slate-800 font-roboto font-bold">
-                Date:
-                <span className="px-2 font-normal">{Orders.date}</span>
-              </h3>
-              <div className="w-full flex my-4 px-3 flex-col border-2 ">
-                <h3 className="mx-6 my-2 text-xl text-slate-800 font-dayone">
-                  Products:
-                  <span className=" mx-2 px-2 py-1 w-2 h-2 bg-purple-500 text-sm  text-white   rounded-full">
-                    {Orders.Products.length}
-                  </span>
-                </h3>
-
-                {Orders &&
-                  Orders.Products.map((i: any, index: number) => (
-                    <div
-                      className="w-full h-auto mx-auto my-3 py-6 flex flex-col md:flex-row  first-line: border-2 hover:shadow-lg bg-white"
-                      key={index}
-                    >
-                      <div className="mx-auto w-3/5 md:w-2/5  flex flex-col md:flex-row">
-                        <img
-                          src={i.image}
-                          alt=""
-                          className="w-full h-52 object-contain rounded"
-                        />
-                      </div>
-
-                      <div className="p-2 md:w-4/5 h-auto flex flex-col">
-                        <p className="mx-3 py-3 text-base font-roboto font-bold text-slate-800">
-                          Product Name:
-                          <span className="pl-2 font-roboto text-base font-normal">
-                            {i.name}
-                          </span>
-                        </p>
-                        <p className="mx-3 py-3 text-base font-roboto font-bold text-slate-800">
-                          Price:
-                          <span className="pl-2 font-roboto text-xl font-normal">
-                            ₦ {i.price}
-                          </span>
-                        </p>
-                        <p className="mx-3 py-3 text-base font-roboto  text-slate-800">
-                          Quantity:
-                          <span className="pl-2 font-roboto text-xl font-normal">
-                            {i.inStock}
-                          </span>
-                        </p>
-                        <p className="mx-3 py-3 text-base font-roboto font-bold text-slate-800">
-                          Product Details:
-                          <span className=" pl-2 font-roboto text-base font-normal">
-                            {i.productDetails}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          )}
+        <div className="flex items-center justify-center pt-32">
+          <div className="w-10 h-10 border-4 border-gray-700 border-t-purple-500 rounded-full animate-spin" />
         </div>
       </div>
-      <Footer />
-    </>
+    );
+  }
+
+  const products: any[] = order.products ?? [];
+  const status = ORDER_STATUSES[order.orderLevel] ?? ORDER_STATUSES[0];
+  const orderDate = order.created_at
+    ? new Date(order.created_at).toLocaleDateString("en-US", {
+        weekday: "short",
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "";
+
+  const computedTotal = products.reduce(
+    (sum: number, p: any) => sum + (Number(p.price) || 0) * (Number(p.item_count) || 1),
+    0
+  );
+
+  return (
+    <div className="w-full min-h-screen bg-[#0c0e14]">
+      <DefaultNav />
+
+      <div className="max-w-4xl mx-auto px-4 md:px-6 pt-24 md:pt-28 pb-12">
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-4 text-sm text-purple-400 font-roboto font-medium hover:underline"
+        >
+          &larr; Back to orders
+        </button>
+
+        <h1 className="text-2xl md:text-3xl font-dayone text-gray-100 mb-6">Order Details</h1>
+
+        <div className="bg-gray-900 rounded-xl border border-gray-800/60 p-5 md:p-6 mb-5">
+          <div className="flex flex-wrap items-center gap-3 mb-5 pb-4 border-b border-gray-800/60">
+            <span className={`px-4 py-1.5 text-xs font-roboto font-bold text-white rounded-full ${status.color}`}>
+              {status.label}
+            </span>
+            {order.orderLevel < 3 && (
+              <button
+                disabled={advancing}
+                onClick={advanceOrderLevel}
+                className="px-4 py-1.5 text-xs font-roboto font-bold text-purple-400 border border-purple-500/50 rounded-full hover:bg-purple-500/10 transition-colors disabled:opacity-50"
+              >
+                {advancing ? "Updating..." : `Mark as ${ORDER_STATUSES[order.orderLevel + 1]?.label}`}
+              </button>
+            )}
+            <span className="ml-auto text-xs text-gray-500 font-roboto">{orderDate}</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+            <div>
+              <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider">Customer</p>
+              <p className="text-sm font-roboto font-bold text-gray-200">{order.surname} {order.name}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider">Email</p>
+              <p className="text-sm font-roboto text-gray-300">{order.email ?? "—"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider">Phone</p>
+              <p className="text-sm font-roboto text-gray-300">{order.phone ?? "—"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider">Payment</p>
+              <p className="text-sm font-roboto text-gray-300">{order.paymentMedium ?? "—"}</p>
+            </div>
+            <div className="sm:col-span-2">
+              <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider">Order ID</p>
+              <p className="text-sm font-roboto text-gray-400 font-mono">{order.id}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gray-900 rounded-xl border border-gray-800/60 overflow-hidden mb-5">
+          <div className="px-5 py-3 border-b border-gray-800/60 flex items-center justify-between">
+            <h3 className="text-base font-dayone text-gray-200">
+              Products
+              <span className="ml-2 px-2 py-0.5 text-xs bg-purple-600 text-white rounded-full">
+                {products.length}
+              </span>
+            </h3>
+          </div>
+
+          <div className="divide-y divide-gray-800/60">
+            {products.map((item: any, index: number) => {
+              const lineTotal = (Number(item.price) || 0) * (Number(item.item_count) || 1);
+              return (
+                <div key={index} className="flex items-center gap-4 px-5 py-4">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-20 h-20 rounded-lg object-contain bg-gray-800/60 flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-roboto font-bold text-gray-200 truncate">{item.name}</p>
+                    <p className="text-xs text-gray-500 font-roboto mt-0.5">
+                      &#8358;{priceFormat.format(Number(item.price) || 0)} x {item.item_count ?? 1}
+                    </p>
+                    {item.productDetails && (
+                      <p className="text-xs text-gray-600 font-roboto mt-1 line-clamp-2">
+                        {item.productDetails}
+                      </p>
+                    )}
+                  </div>
+                  <p className="text-sm font-dayone text-gray-100 flex-shrink-0">
+                    &#8358;{priceFormat.format(lineTotal)}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center justify-between px-5 py-4 bg-gray-800/40 border-t border-gray-800/60">
+            <span className="text-sm font-roboto font-bold text-gray-400">Order Total</span>
+            <span className="text-lg font-dayone text-gray-100">
+              &#8358;{priceFormat.format(Number(order.total_price) || computedTotal)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <ToastContainer theme="dark" />
+    </div>
   );
 };
 

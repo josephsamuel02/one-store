@@ -8,7 +8,6 @@ interface AppComponent {
   addToCart: any;
 }
 const Products: React.FC<AppComponent> = ({ category, categoryProducts, addToCart }) => {
-  const token = localStorage.getItem("one_store_login");
   const User = localStorage.getItem("one_store_login");
 
   const priceFormat = new Intl.NumberFormat("en-US");
@@ -78,7 +77,7 @@ const Products: React.FC<AppComponent> = ({ category, categoryProducts, addToCar
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      const cartItem = { ...i, inStock: 1, cartId: token };
+                      const cartItem = { ...i, inStock: 1 };
                       addToCart(cartItem);
                     }}
                   >

@@ -1,36 +1,58 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios"; // Timeout set to 40 seconds (40000 milliseconds)
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
-import { db } from "../DB/firebase";
-import delay from "delay";
-
-axios.defaults.timeout = 140000;
+import { supabase } from "../DB/supabase";
 
 export const addToCart = createAsyncThunk(
   "cart/addToCart",
-  async (data: object, { rejectWithValue }) => {
+  async (data: any, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("one_store_login");
-      if (!token) {
-        throw new Error("User not logged in.");
+      if (!token) throw new Error("User not logged in.");
+
+      const newProduct = {
+        id: data.id,
+        image: data.image,
+        name: data.name,
+        productDetails: data.productDetails,
+        features: data.features,
+        price: data.price,
+        old_price: data.old_price,
+        item_count: 1,
+        category: data.category,
+      };
+
+      const { data: cartRow, error: fetchErr } = await supabase
+        .from("cart")
+        .select("id, products")
+        .eq("user_id", token)
+        .maybeSingle();
+
+      if (fetchErr) throw fetchErr;
+
+      if (cartRow) {
+        const existing: any[] = cartRow.products ?? [];
+        const idx = existing.findIndex((p: any) => p.id === newProduct.id);
+        if (idx >= 0) {
+          existing[idx].item_count = (existing[idx].item_count ?? 1) + 1;
+        } else {
+          existing.push(newProduct);
+        }
+
+        const { error } = await supabase
+          .from("cart")
+          .update({ products: existing })
+          .eq("id", cartRow.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("cart")
+          .insert({ user_id: token, products: [newProduct] });
+        if (error) throw error;
       }
-      const response = await addDoc(collection(db, "cart"), {
-        ...data,
-        cartId: token, // Link item to the user's session
-      });
-      return { id: response.id, ...data }; // Return the new document ID and data
+
+      return newProduct;
     } catch (error: any) {
-      return rejectWithValue(error.message); // Reject with meaningful error message
+      return rejectWithValue(error.message);
     }
   }
 );
@@ -38,21 +60,16 @@ export const addToCart = createAsyncThunk(
 export const getCart = createAsyncThunk("get-cart", async (_, { rejectWithValue }) => {
   try {
     const token = localStorage.getItem("one_store_login");
+    if (!token) return [];
 
-    const targetRef = collection(db, "cart");
-    const q = query(targetRef, where("cartId", "==", token));
-    const d: any = [];
+    const { data, error } = await supabase
+      .from("cart")
+      .select("id, products")
+      .eq("user_id", token)
+      .maybeSingle();
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    token &&
-      (await getDocs(q).then((querySnapshot) => {
-        const response: any = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-
-        if (response) {
-          response.map((item: any) => (item.cartId == token ? d.push(item) : null));
-        }
-      }));
-    return d;
+    if (error) throw error;
+    return data?.products ?? [];
   } catch (error: any) {
     return rejectWithValue(error.message);
   }
@@ -62,10 +79,28 @@ export const UpdateCartQuantity = createAsyncThunk(
   "update_cart_quantity",
   async (data: any, { rejectWithValue }) => {
     try {
-      await updateDoc(doc(db, "cart", data.id), { inStock: data.q });
-      await delay(900);
+      const token = localStorage.getItem("one_store_login");
+      if (!token) throw new Error("User not logged in.");
+
+      const { data: cartRow, error: fetchErr } = await supabase
+        .from("cart")
+        .select("id, products")
+        .eq("user_id", token)
+        .maybeSingle();
+
+      if (fetchErr) throw fetchErr;
+      if (!cartRow) throw new Error("Cart not found.");
+
+      const updated = (cartRow.products ?? []).map((p: any) =>
+        p.id === data.id ? { ...p, item_count: data.q } : p
+      );
+
+      const { error } = await supabase
+        .from("cart")
+        .update({ products: updated })
+        .eq("id", cartRow.id);
+      if (error) throw error;
     } catch (error: any) {
-      console.log(error);
       return rejectWithValue(error.message);
     }
   }
@@ -75,8 +110,25 @@ export const DeleteCartItem = createAsyncThunk(
   "delete_cart_item",
   async (data: any, { rejectWithValue }) => {
     try {
-      await deleteDoc(doc(db, "cart", data.id));
-      await delay(900);
+      const token = localStorage.getItem("one_store_login");
+      if (!token) throw new Error("User not logged in.");
+
+      const { data: cartRow, error: fetchErr } = await supabase
+        .from("cart")
+        .select("id, products")
+        .eq("user_id", token)
+        .maybeSingle();
+
+      if (fetchErr) throw fetchErr;
+      if (!cartRow) throw new Error("Cart not found.");
+
+      const updated = (cartRow.products ?? []).filter((p: any) => p.id !== data.id);
+
+      const { error } = await supabase
+        .from("cart")
+        .update({ products: updated })
+        .eq("id", cartRow.id);
+      if (error) throw error;
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
@@ -88,15 +140,17 @@ export const getMyOrders = createAsyncThunk(
   async (_, { rejectWithValue }: any) => {
     try {
       const token = localStorage.getItem("one_store_login");
+      if (!token) return [];
 
-      const targetRef = collection(db, "order");
-      const q = query(targetRef, where("userId", "==", token));
-      const querySnapshot = await getDocs(q);
+      const { data, error } = await supabase
+        .from("order")
+        .select("*")
+        .eq("user_id", token)
+        .order("created_at", { ascending: false });
 
-      const newData: any = querySnapshot.docs.map((doc) => ({ ...doc.data() }));
-      return newData[0];
+      if (error) throw error;
+      return data ?? [];
     } catch (error: any) {
-      console.log(" Unable to get data");
       return rejectWithValue(error.message);
     }
   }
@@ -111,71 +165,30 @@ const initialState = {
 };
 
 export const Cart: any = createSlice({
-  name: "artwork",
-  initialState: initialState,
+  name: "cart",
+  initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
+      .addCase(getCart.pending, (state) => { state.status = "loading"; })
+      .addCase(getCart.fulfilled, (state: any, action) => { state.status = "succeeded"; state.cart = action.payload; })
+      .addCase(getCart.rejected, (state: any, action) => { state.status = "failed"; state.error = action.payload; })
 
-      .addCase(getCart.pending, (state) => {
-        state.status = "loading";
-      })
-      .addCase(getCart.fulfilled, (state: any, action) => {
-        state.status = "succeeded";
-        state.cart = action.payload;
-      })
-      .addCase(getCart.rejected, (state: any, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      })
+      .addCase(addToCart.pending, (state) => { state.status = "loading"; })
+      .addCase(addToCart.fulfilled, (state: any, action) => { state.status = "succeeded"; state.data = action.payload; })
+      .addCase(addToCart.rejected, (state: any, action) => { state.status = "failed"; state.error = action.payload; })
 
-      .addCase(addToCart.pending, (state) => {
-        state.status = "loading";
-      })
-      .addCase(addToCart.fulfilled, (state: any, action) => {
-        state.status = "succeeded";
-        state.data = action.payload;
-      })
-      .addCase(addToCart.rejected, (state: any, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      })
+      .addCase(UpdateCartQuantity.pending, (state) => { state.status = "loading"; })
+      .addCase(UpdateCartQuantity.fulfilled, (state: any, action) => { state.status = "succeeded"; state.data = action.payload; })
+      .addCase(UpdateCartQuantity.rejected, (state: any, action) => { state.status = "failed"; state.error = action.payload; })
 
-      .addCase(UpdateCartQuantity.pending, (state) => {
-        state.status = "loading";
-      })
-      .addCase(UpdateCartQuantity.fulfilled, (state: any, action) => {
-        state.status = "succeeded";
-        state.data = action.payload;
-      })
-      .addCase(UpdateCartQuantity.rejected, (state: any, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      })
+      .addCase(DeleteCartItem.pending, (state) => { state.status = "loading"; })
+      .addCase(DeleteCartItem.fulfilled, (state: any, action) => { state.status = "succeeded"; state.data = action.payload; })
+      .addCase(DeleteCartItem.rejected, (state: any, action) => { state.status = "failed"; state.error = action.payload; })
 
-      .addCase(DeleteCartItem.pending, (state) => {
-        state.status = "loading";
-      })
-      .addCase(DeleteCartItem.fulfilled, (state: any, action) => {
-        state.status = "succeeded";
-        state.data = action.payload;
-      })
-      .addCase(DeleteCartItem.rejected, (state: any, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      })
-
-      .addCase(getMyOrders.pending, (state) => {
-        state.status = "loading";
-      })
-      .addCase(getMyOrders.fulfilled, (state: any, action) => {
-        state.status = "succeeded";
-        state.orders = action.payload;
-      })
-      .addCase(getMyOrders.rejected, (state: any, action) => {
-        state.status = "failed";
-        state.error = action.payload;
-      });
+      .addCase(getMyOrders.pending, (state) => { state.status = "loading"; })
+      .addCase(getMyOrders.fulfilled, (state: any, action) => { state.status = "succeeded"; state.orders = action.payload; })
+      .addCase(getMyOrders.rejected, (state: any, action) => { state.status = "failed"; state.error = action.payload; });
   },
 });
 

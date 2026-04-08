@@ -1,141 +1,123 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import ROUTES from "../../utils/Routes";
-
-import { getDocs, collection } from "firebase/firestore";
-import { db } from "../../DB/firebase";
-import DefaultNav from "../components/AdminNav";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../../DB/supabase";
+
+interface Product {
+  id: string;
+  image: string;
+  name: string;
+  price: number;
+  stock: number;
+  productDetails: string;
+  category: string;
+}
 
 const Store: React.FC = () => {
   const adminToken = localStorage.getItem("one_store_admin");
-  const Navigate = useNavigate();
-
-  const [Product, setProducts] = useState<any>();
+  const navigate = useNavigate();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const priceFormat = new Intl.NumberFormat("en-US");
-  const fetchProducts = async () => {
-    await getDocs(collection(db, "products")).then((querySnapshot) => {
-      const newData: any = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-      setProducts(newData);
-    });
-  };
 
   useEffect(() => {
     if (!adminToken) {
-      Navigate(ROUTES.ADMIN_LOGIN);
+      navigate(ROUTES.ADMIN_LOGIN);
+      return;
     }
-    fetchProducts();
-  }, []);
+
+    const fetchProducts = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, image, name, price, stock, productDetails, category")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Failed to fetch products:", error);
+        return;
+      }
+      setProducts((data as Product[]) ?? []);
+      setLoading(false);
+    };
+
+    void fetchProducts();
+  }, [adminToken, navigate]);
 
   return (
-    <>
-      <DefaultNav />
-      <div className="mx-auto w-full md:w-5/6 h-screen bg-white overflow-y-scroll scrollbar-hide">
-        <div className="w-full mx-auto p-2 mt-28  h-full grid grid-flow-row grid-cols-1 md:grid-cols-2 gap-3">
-          {Product &&
-            Product.map((i: any, index: number) => (
-              <a
-                className="w-5/6 md:w-80 h-96 mx-auto py-4 flex flex-col items-center rounded-md shadow-md hover:shadow-lg bg-white"
-                href={`${ROUTES.ADMIN_PRODUCT_DETAILS}/${i.id}`}
-                key={index}
-              >
-                <div className="w-full flex flex-col">
-                  <img
-                    src={i.image}
-                    alt=""
-                    className="mx-auto w-4/5 h-36 object-contain rounded"
-                  />
-                  <div className="mx-2 mt-4 w-full px-2  my-auto flex flex-col">
-                    <p className="mx-1  py-1   text-base font-roboto font-semibold text-slate-800">
-                      Product name:
-                      <span className=" px-2 font-roboto font-normal">{i.name}</span>
-                    </p>
-                    <p className="mx-1 py-1 truncate text-base font-roboto font-semibold text-slate-800">
-                      Price:
-                      <span className="font-roboto font-normal">
-                        ₦{priceFormat.format(i.price)}
-                      </span>
-                    </p>
-                    <p className="mx-1 py-1  truncate text-base font-roboto font-semibold text-slate-800">
-                      Quantity in stock:
-                      <span className="font-roboto font-normal ">{i.inStock}</span>
-                    </p>
-                    <p className=" w-9/12 mx-1 py-1 truncate text-base font-roboto font-semibold text-slate-800">
-                      Product ID:
-                      <span className="font-roboto font-normal pl-1">{i.id}</span>
-                    </p>
-                    <div className="w-9/12 h-40">
-                      <p className="mx-1  py-1 truncate  text-sm font-roboto font-semibold  text-slate-800">
-                        Product Details:
-                        <span className=" truncate px-2 font-roboto font-normal">
-                          {i.productDetails}
-                        </span>
-                      </p>
-                      <span className="p-1  font-nunito underline font-normal">..more</span>
-                    </div>
-                  </div>
-                </div>
-              </a>
-            ))}
+    <div className="w-full px-4 md:px-8 py-6">
+      <h2 className="text-xl md:text-2xl text-gray-100 font-dayone mb-6">
+        Products
+        <span className="ml-2 text-sm font-roboto font-normal text-gray-500">
+          ({products.length})
+        </span>
+      </h2>
 
-          {/* {stocks == 0 &&
-              Product.map((i: any, index: number) =>
-                i.inStock == 0 ? (
-                  <a
-                    className="w-5/6 md:w-80 h-96 mx-auto py-4 flex flex-col items-center rounded-md shadow-md hover:shadow-lg bg-white"
-                    href={`${ROUTES.ADMIN_PRODUCT_DETAILS}?product_id=${i.productId}`}
-                    key={index}
-                  >
-                    <div className="w-full flex flex-col">
-                      <img
-                        src={i.image}
-                        alt=""
-                        className="mx-auto w-4/5 h-36  object-contain rounded"
-                      />
-                      <div className="mx-2 mt-4 w-full px-2  my-auto flex flex-col">
-                        <p className="mx-1  py-1   text-base font-roboto font-semibold text-slate-800">
-                          Product name:
-                          <span className=" px-2 font-roboto font-normal">{i.name}</span>
-                        </p>
-
-                        <p className="mx-1 py-1 truncate text-base font-roboto font-semibold text-slate-800">
-                          Price:
-                          <span className="font-roboto font-normal">
-                            {" "}
-                            ₦{priceFormat.format(i.price)}
-                          </span>
-                        </p>
-
-                        <p className="mx-1 py-1 truncate text-base font-roboto font-semibold text-slate-800">
-                          Quantity in stock:
-                          <span className="font-roboto font-normal">{i.inStock}</span>
-                        </p>
-                        <p className=" w-9/12 mx-1 py-1 truncate text-base font-roboto font-semibold text-slate-800">
-                          Product ID:
-                          <span className="font-roboto font-normal">{i.productId}</span>
-                        </p>
-                        <div className="w-9/12 h-40">
-                          <p className="mx-1  py-1 truncate  text-sm font-roboto font-semibold  text-slate-800">
-                            Product Details:
-                            <span className=" truncate px-2 font-roboto font-normal">
-                              {i.productDetails}
-                            </span>
-                          </p>
-                          <span className="p-1  font-nunito underline font-normal">
-                            ..more
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </a>
-                ) : (
-                  ""
-                )
-              )} */}
+      {loading && (
+        <div className="flex items-center justify-center py-16">
+          <div className="w-8 h-8 border-4 border-gray-700 border-t-purple-500 rounded-full animate-spin" />
         </div>
-      </div>
-    </>
+      )}
+
+      {!loading && products.length === 0 && (
+        <div className="text-center py-16">
+          <p className="text-gray-500 font-roboto text-sm">No products yet</p>
+        </div>
+      )}
+
+      {!loading && (
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+          {products.map((p) => (
+            <div
+              key={p.id}
+              onClick={() => navigate(`${ROUTES.ADMIN_PRODUCT_DETAILS}/${p.id}`)}
+              className="bg-gray-900 rounded-xl border border-gray-800/60 hover:border-gray-700 transition-all hover:-translate-y-0.5 overflow-hidden cursor-pointer"
+            >
+              <div className="h-40 bg-gray-800/40 flex items-center justify-center border-b border-gray-800/60">
+                <img
+                  src={p.image}
+                  alt={p.name}
+                  className="h-full w-auto object-contain p-3"
+                />
+              </div>
+
+              <div className="p-4">
+                <p className="text-sm font-roboto font-bold text-gray-200 truncate mb-1">
+                  {p.name}
+                </p>
+
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-base font-dayone text-gray-100">
+                    &#8358;{priceFormat.format(p.price)}
+                  </span>
+                  <span className={`text-xs font-roboto font-medium px-2 py-0.5 rounded-full ${
+                    (p.stock ?? 0) > 0
+                      ? "bg-green-500/15 text-green-400"
+                      : "bg-red-500/15 text-red-400"
+                  }`}>
+                    {(p.stock ?? 0) > 0 ? `${p.stock} in stock` : "Out of stock"}
+                  </span>
+                </div>
+
+                {p.category && (
+                  <span className="inline-block text-[10px] font-roboto text-gray-500 uppercase tracking-wider bg-gray-800 px-2 py-0.5 rounded">
+                    {p.category}
+                  </span>
+                )}
+
+                <p className="mt-2 text-xs text-gray-500 font-roboto line-clamp-2">
+                  {p.productDetails}
+                </p>
+
+                <p className="mt-2 text-[10px] text-gray-700 font-roboto font-mono truncate">
+                  ID: {p.id}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 

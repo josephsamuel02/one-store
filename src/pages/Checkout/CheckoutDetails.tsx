@@ -7,10 +7,9 @@ import PayOfflineCard from "./payOfflineCard";
 
 interface AppComponent {
   CheckOutData: any[];
-  TotalPrice: number;
 }
 
-const CheckoutDetails: React.FC<AppComponent> = ({ CheckOutData, TotalPrice }) => {
+const CheckoutDetails: React.FC<AppComponent> = ({ CheckOutData }) => {
   const token = localStorage.getItem("one_store_login");
   const priceFormat = new Intl.NumberFormat("en-US");
 

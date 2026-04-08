@@ -215,7 +215,7 @@ const CartItems: React.FC<AppComponent> = ({ cartItems, cartRowId, totalPrice, g
           )}
         </div>
       ) : (
-        <CheckoutDetails CheckOutData={cartItems} TotalPrice={totalPrice} />
+        <CheckoutDetails CheckOutData={cartItems} />
       )}
       <ToastContainer />
     </>

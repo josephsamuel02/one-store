@@ -77,7 +77,16 @@ const CheckoutDetails: React.FC<AppComponent> = ({ CheckOutData }) => {
 
       if (error) {
         console.error("Order error:", error);
-        toast.error("Failed to place order");
+        if (
+          error.code === "23505" &&
+          String(error.message).toLowerCase().includes("email")
+        ) {
+          toast.error(
+            "Cannot place another order: your Supabase `order` table has a unique constraint on email. Remove it (see supabase/fix_order_email_unique.sql in this project)."
+          );
+        } else {
+          toast.error(error.message || "Failed to place order");
+        }
         return;
       }
 
@@ -252,6 +261,97 @@ const CheckoutDetails: React.FC<AppComponent> = ({ CheckOutData }) => {
                 {placing ? "Placing Order..." : "Pay Offline"}
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Partner store banner */}
+      <div className="mt-8 rounded-2xl overflow-hidden border border-purple-100 bg-gradient-to-br from-purple-50 via-white to-purple-50/30">
+        <div className="flex flex-col sm:flex-row items-center gap-6 px-6 py-6 md:px-8 md:py-7">
+          {/* Logo slot */}
+          <div className="flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-white border-2 border-purple-100 shadow-sm flex items-center justify-center overflow-hidden">
+            {/* Replace the img src with your actual P-ONE store logo path, e.g. "/img/p-one-logo.png" */}
+            <img
+              src="/img/p-one-logo.png"
+              alt="P-ONE Store"
+              className="w-full h-full object-contain p-2"
+              onError={(e) => {
+                const el = e.currentTarget;
+                el.style.display = "none";
+                const parent = el.parentElement;
+                if (parent) {
+                  const placeholder = document.createElement("div");
+                  placeholder.className =
+                    "flex flex-col items-center justify-center w-full h-full gap-1";
+                  placeholder.innerHTML =
+                    `<svg class="w-8 h-8 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><span class="text-[9px] text-purple-300 font-roboto text-center">Add logo</span>`;
+                  parent.appendChild(placeholder);
+                }
+              }}
+            />
+          </div>
+
+          {/* Text content */}
+          <div className="flex-1 text-center sm:text-left">
+            <div className="flex items-center justify-center sm:justify-start gap-2 mb-1.5">
+              <span className="text-[10px] font-roboto font-bold uppercase tracking-widest text-Storepurple bg-purple-100 px-2.5 py-0.5 rounded-full">
+                Official Partner
+              </span>
+            </div>
+            <h3 className="text-lg md:text-xl font-dayone text-gray-900 mb-1">
+              P-ONE Store
+            </h3>
+            <p className="text-sm font-roboto text-gray-500 leading-relaxed max-w-sm mx-auto sm:mx-0">
+              Your order is fulfilled in partnership with{" "}
+              <span className="font-semibold text-gray-700">P-ONE Store</span>, our
+              trusted supply partner ensuring quality products and reliable delivery.
+            </p>
+          </div>
+
+          {/* Verified badge */}
+          <div className="flex-shrink-0 flex flex-col items-center gap-1.5 text-green-600">
+            <div className="w-12 h-12 rounded-full bg-green-50 border border-green-100 flex items-center justify-center">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                />
+              </svg>
+            </div>
+            <span className="text-[10px] font-roboto font-semibold uppercase tracking-wide text-green-600">
+              Verified
+            </span>
+          </div>
+        </div>
+
+        {/* Bottom strip */}
+        <div className="flex items-center justify-center gap-6 px-6 py-3 bg-gradient-to-r from-Storepurple/5 via-purple-50 to-Storepurple/5 border-t border-purple-100/60">
+          <div className="flex items-center gap-1.5 text-gray-500">
+            <svg className="w-4 h-4 text-Storepurple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span className="text-xs font-roboto">Quality Guaranteed</span>
+          </div>
+          <div className="w-px h-4 bg-gray-200" />
+          <div className="flex items-center gap-1.5 text-gray-500">
+            <svg className="w-4 h-4 text-Storepurple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span className="text-xs font-roboto">Fast Fulfillment</span>
+          </div>
+          <div className="w-px h-4 bg-gray-200" />
+          <div className="flex items-center gap-1.5 text-gray-500">
+            <svg className="w-4 h-4 text-Storepurple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <span className="text-xs font-roboto">Trusted Supply</span>
           </div>
         </div>
       </div>

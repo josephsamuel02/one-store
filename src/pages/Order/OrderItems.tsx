@@ -17,7 +17,7 @@ const OrderItems: React.FC<AppComponent> = ({ orders }) => {
   const priceFormat = new Intl.NumberFormat("en-US");
 
   return (
-    <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-10">
+    <div className="w-full py-6 md:py-10">
       <h1 className="text-2xl md:text-3xl font-dayone text-gray-900 mb-6">My Orders</h1>
 
       {orders.length === 0 && (
@@ -34,7 +34,8 @@ const OrderItems: React.FC<AppComponent> = ({ orders }) => {
       )}
 
       <div className="space-y-5">
-        {orders.map((order: any) => {
+        {orders.map((order: any, index: number) => {
+          const isLatest = index === 0;
           const products: any[] = order.products ?? [];
           const status = ORDER_STATUSES[order.orderLevel] ?? ORDER_STATUSES[0];
           const orderDate = order.created_at
@@ -52,16 +53,42 @@ const OrderItems: React.FC<AppComponent> = ({ orders }) => {
           );
 
           return (
+            <React.Fragment key={order.id}>
+              {index === 1 && orders.length > 1 && (
+                <div className="flex items-center gap-3 py-2">
+                  <div className="flex-1 h-px bg-gray-200" />
+                  <span className="text-xs font-roboto font-semibold text-gray-400 uppercase tracking-wider shrink-0">
+                    Earlier orders
+                  </span>
+                  <div className="flex-1 h-px bg-gray-200" />
+                </div>
+              )}
             <div
-              key={order.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden"
+              className={`rounded-xl overflow-hidden transition-shadow ${
+                isLatest
+                  ? "bg-white ring-2 ring-Storepurple/50 shadow-md shadow-purple-100 border border-purple-100"
+                  : "bg-white shadow-sm border border-gray-100 opacity-[0.98]"
+              }`}
             >
-              <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 bg-gray-50 border-b border-gray-100">
-                <div className="flex items-center gap-3">
+              <div
+                className={`flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b ${
+                  isLatest
+                    ? "bg-gradient-to-r from-purple-50 to-white border-purple-100/80"
+                    : "bg-gray-50 border-gray-100"
+                }`}
+              >
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                  {isLatest && (
+                    <span className="px-2.5 py-0.5 text-[10px] sm:text-xs font-roboto font-bold uppercase tracking-wide text-Storepurple bg-purple-100 rounded-full">
+                      Latest order
+                    </span>
+                  )}
                   <span className={`px-3 py-1 text-xs font-roboto font-bold text-white rounded-full ${status.color}`}>
                     {status.label}
                   </span>
-                  <span className="text-xs text-gray-500 font-roboto">{orderDate}</span>
+                  <span className={`text-xs font-roboto ${isLatest ? "text-gray-600 font-medium" : "text-gray-500"}`}>
+                    {orderDate}
+                  </span>
                 </div>
                 <p className="text-xs text-gray-500 font-roboto">
                   ID: {order.id?.slice(0, 8)}
@@ -93,15 +120,30 @@ const OrderItems: React.FC<AppComponent> = ({ orders }) => {
                 ))}
               </div>
 
-              <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-100">
-                <span className="text-sm font-roboto text-gray-600">
-                  {products.length} item{products.length !== 1 ? "s" : ""}
-                </span>
-                <span className="text-base font-dayone text-gray-900">
-                  Total: ₦{priceFormat.format(Number(order.total_price) || orderTotal)}
-                </span>
+              <div
+                className={`flex flex-col gap-1 px-4 py-3 border-t ${
+                  isLatest ? "bg-purple-50/40 border-purple-100/60" : "bg-gray-50 border-gray-100"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-roboto text-gray-600">
+                    {products.length} item{products.length !== 1 ? "s" : ""}
+                  </span>
+                  <span className={`text-base font-dayone ${isLatest ? "text-Storepurple" : "text-gray-900"}`}>
+                    Subtotal: ₦{priceFormat.format(Number(order.total_price) || orderTotal)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-end gap-1.5">
+                  <svg className="w-3 h-3 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-[10px] font-roboto text-amber-700">
+                    Delivery fee not included — negotiated offline
+                  </span>
+                </div>
               </div>
             </div>
+            </React.Fragment>
           );
         })}
       </div>

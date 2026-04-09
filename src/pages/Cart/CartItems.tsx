@@ -157,21 +157,47 @@ const CartItems: React.FC<AppComponent> = ({ cartItems, cartRowId, totalPrice, g
             </h3>
           )}
 
-          <div className="mx-auto p-6 py-1 w-11/12 md:w-3/5 h-auto bg-white rounded-md">
-            <h3 className="text-xl py-3 text-slate-900 font-bold">Notice</h3>
-            <p className="text-md md:text-md text-slate-800 font-roboto font-thin">
-              All products will be sent via a delivery agent. Delivery cost will be covered by the
-              buyer and can be negotiated between buyer and delivery agent.
-            </p>
+          <div className="mx-auto my-4 w-full rounded-2xl overflow-hidden border border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50">
+            <div className="flex gap-4 px-5 py-4">
+              {/* Icon column */}
+              <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center mt-0.5">
+                <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                </svg>
+              </div>
+              {/* Text column */}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-roboto font-bold uppercase tracking-widest text-amber-700 mb-1">
+                  Delivery Notice
+                </p>
+                <p className="text-sm font-roboto text-amber-900 leading-relaxed">
+                  All products are shipped via a delivery agent.{" "}
+                  <span className="font-semibold">Delivery cost is covered by the buyer</span>{" "}
+                  and will be negotiated directly with the delivery agent.
+                </p>
+              </div>
+            </div>
+            {/* Bottom strip */}
+            <div className="flex items-center gap-2 px-5 py-2.5 bg-amber-100/60 border-t border-amber-200/60">
+              <svg className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-[11px] font-roboto text-amber-700">
+                Delivery fee is <span className="font-semibold">not included</span> in your subtotal
+              </p>
+            </div>
           </div>
 
           {totalPrice > 0 && (
-            <div className="w-full h-auto my-6 flex flex-col bg-white">
-              <div className="flex py-3 flex-row">
-                <h3 className="text-lg text-black px-3 font-roboto font-bold">Total:</h3>
-                <h3 className="text-xl text-black font-dayone">
-                  ₦{priceFormat.format(totalPrice)}
-                </h3>
+            <div className="w-full h-auto my-6 flex flex-col bg-white gap-3">
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-baseline gap-3 py-1">
+                  <h3 className="text-lg text-black px-3 font-roboto font-bold">Subtotal:</h3>
+                  <h3 className="text-xl text-black font-dayone">
+                    ₦{priceFormat.format(totalPrice)}
+                  </h3>
+                </div>
+               
               </div>
               <button
                 className="w-2/5 h-auto py-3 text-lg text-center text-white font-bold cursor-pointer rounded bg-Storepurple hover:bg-purple-800"

@@ -82,9 +82,7 @@ const Footer: React.FC = () => {
           <p className="text-sm text-gray-500 font-roboto">
             &copy; {new Date().getFullYear()} OneStore. All rights reserved.
           </p>
-          <p className="text-xs text-gray-600 font-roboto">
-            Built with care in Nigeria
-          </p>
+          <p className="text-xs text-gray-600 font-roboto">Built with care in Nigeria</p>
         </div>
       </div>
     </footer>

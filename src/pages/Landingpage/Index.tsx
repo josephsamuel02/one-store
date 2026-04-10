@@ -121,9 +121,9 @@ const Index: React.FC = () => {
   }, []);
 
   return (
-    <div className="w-full min-h-screen pt-20 md:pt-[72px] bg-gray-50">
+    <div className="w-full min-h-screen pt-12 md:pt-[72px] bg-gray-50">
       <DefaultNav Cart={Cart} />
-      <div className="pt-4 md:pt-6">
+      <div className="pt-4 md:pt-3 pb-4 md:pb-2">
         <Banner />
       </div>
       <Categories />

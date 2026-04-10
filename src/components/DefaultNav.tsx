@@ -35,18 +35,54 @@ const DefaultNav: React.FC<AppComponent> = ({ Cart }) => {
   const [categoryOpen, setCategoryOpen] = useState(false);
 
   const CATEGORIES = [
-    { name: "Computers",      url: "computers",    icon: <HiOutlineDesktopComputer size={20} className="text-Storepurple" /> },
-    { name: "Electronics",    url: "electronics",  icon: <LuRadioReceiver size={18} className="text-Storepurple" /> },
-    { name: "Grocery",        url: "groceries",    icon: <AiOutlineShopping size={18} className="text-Storepurple" /> },
-    { name: "Phone & Tablets",url: "phones",       icon: <BsPhone size={18} className="text-Storepurple" /> },
-    { name: "Accessories",    url: "accessories",  icon: <FaHeadphones size={18} className="text-Storepurple" /> },
-    { name: "Fashion",        url: "fashion",      icon: <LuShirt size={18} className="text-Storepurple" /> },
-    { name: "Sport",          url: "sport",        icon: <CgGym size={18} className="text-Storepurple" /> },
-    { name: "Food",           url: "food",         icon: <LuApple size={18} className="text-Storepurple" /> },
-    { name: "Body Care",      url: "body_care",    icon: <GiLiquidSoap size={18} className="text-Storepurple" /> },
-    { name: "Baby",           url: "baby",         icon: <LuBaby size={18} className="text-Storepurple" /> },
-    { name: "Cosmetics",      url: "cosmetics",    icon: <GiLipstick size={18} className="text-Storepurple" /> },
-    { name: "Wines & Drinks", url: "wine",         icon: <FaWineBottle size={18} className="text-Storepurple" /> },
+    {
+      name: "Computers",
+      url: "computers",
+      icon: <HiOutlineDesktopComputer size={20} className="text-Storepurple" />,
+    },
+    {
+      name: "Electronics",
+      url: "electronics",
+      icon: <LuRadioReceiver size={18} className="text-Storepurple" />,
+    },
+    {
+      name: "Grocery",
+      url: "groceries",
+      icon: <AiOutlineShopping size={18} className="text-Storepurple" />,
+    },
+    {
+      name: "Phone & Tablets",
+      url: "phones",
+      icon: <BsPhone size={18} className="text-Storepurple" />,
+    },
+    {
+      name: "Accessories",
+      url: "accessories",
+      icon: <FaHeadphones size={18} className="text-Storepurple" />,
+    },
+    {
+      name: "Fashion",
+      url: "fashion",
+      icon: <LuShirt size={18} className="text-Storepurple" />,
+    },
+    { name: "Sport", url: "sport", icon: <CgGym size={18} className="text-Storepurple" /> },
+    { name: "Food", url: "food", icon: <LuApple size={18} className="text-Storepurple" /> },
+    {
+      name: "Body Care",
+      url: "body_care",
+      icon: <GiLiquidSoap size={18} className="text-Storepurple" />,
+    },
+    { name: "Baby", url: "baby", icon: <LuBaby size={18} className="text-Storepurple" /> },
+    {
+      name: "Cosmetics",
+      url: "cosmetics",
+      icon: <GiLipstick size={18} className="text-Storepurple" />,
+    },
+    {
+      name: "Wines & Drinks",
+      url: "wine",
+      icon: <FaWineBottle size={18} className="text-Storepurple" />,
+    },
   ];
 
   const fetchOrdersAttention = useCallback(async () => {
@@ -83,10 +119,7 @@ const DefaultNav: React.FC<AppComponent> = ({ Cart }) => {
       if (sessionUid) {
         localStorage.setItem("one_store_login", sessionUid);
         if (isLoginExpired()) {
-          localStorage.setItem(
-            "login_expiry_date",
-            String(Date.now() + 24 * 60 * 60 * 1000)
-          );
+          localStorage.setItem("login_expiry_date", String(Date.now() + 24 * 60 * 60 * 1000));
         }
         setLoggedIn(true);
         return;
@@ -107,10 +140,7 @@ const DefaultNav: React.FC<AppComponent> = ({ Cart }) => {
       if (session?.user?.id) {
         localStorage.setItem("one_store_login", session.user.id);
         if (isLoginExpired()) {
-          localStorage.setItem(
-            "login_expiry_date",
-            String(Date.now() + 24 * 60 * 60 * 1000)
-          );
+          localStorage.setItem("login_expiry_date", String(Date.now() + 24 * 60 * 60 * 1000));
         }
         setLoggedIn(true);
         return;
@@ -145,13 +175,12 @@ const DefaultNav: React.FC<AppComponent> = ({ Cart }) => {
 
   return (
     <>
-      <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-gray-100 z-20">
-        <div className="max-w-7xl mx-auto h-16 md:h-[68px] px-4 md:px-6 flex items-center gap-4">
-
+      <nav className="fixed top-0 w-full bg-white backdrop-blur-sm border-b border-gray-100 z-20">
+        <div className="max-w-7xl mx-auto h-16 md:h-[68px] px-2 md:px-6 flex items-center gap-4">
           {/* Hamburger — always visible */}
           <button
             onClick={() => setCategoryOpen(true)}
-            className="flex-shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100 transition-colors"
+            className="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 md:w-9 md:h-9 rounded-full hover:bg-gray-100 transition-colors"
             aria-label="Open categories"
           >
             <MdMenu size={24} className="text-gray-700" />
@@ -161,25 +190,19 @@ const DefaultNav: React.FC<AppComponent> = ({ Cart }) => {
             <img
               src="/img/OneStore logo.svg"
               alt="OneStore"
-              className="h-8 md:h-9 object-contain"
+              className="h-5 md:h-9 object-contain"
             />
           </a>
 
-          <form
-            onSubmit={handleSearch}
-            className="flex flex-1 max-w-lg mx-2 md:mx-auto"
-          >
+          <form onSubmit={handleSearch} className="flex flex-1 max-w-lg mx-0 md:mx-auto">
             <div className="relative w-full">
-              <MdSearch
-                size={20}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-              />
+              <MdSearch className="absolute left-2.5 md:left-3.5 top-1/2 -translate-y-1/2 text-[20px] md-text-[30px] text-gray-400" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search products..."
-                className="w-full pl-10 pr-4 py-2 md:py-2.5 text-sm font-roboto bg-gray-50 border border-gray-200 rounded-full outline-none transition-all focus:border-Storepurple focus:ring-2 focus:ring-purple-100"
+                className="w-full pl-8 md:pl-10 pr-2 md:pr-4 py-1.5  md:py-2.5 text-xs md:text-sm font-roboto bg-gray-50 border border-gray-200 rounded-full outline-none transition-all focus:border-Storepurple focus:ring-2 focus:ring-purple-100"
               />
             </div>
           </form>
@@ -188,11 +211,11 @@ const DefaultNav: React.FC<AppComponent> = ({ Cart }) => {
             {loggedIn ? (
               <div className="flex items-center gap-1 md:gap-2">
                 <a
-                  className="relative inline-flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  className="relative inline-flex items-center justify-center p-0 md:p-2 rounded-full hover:bg-gray-100 transition-colors"
                   href={ROUTES.CART}
                   title="Cart"
                 >
-                  <MdOutlineLocalGroceryStore size={26} className="text-gray-700" />
+                  <MdOutlineLocalGroceryStore className="text-gray-700 text-[22px]" />
                   {cartCount > 0 && (
                     <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center bg-red-500 rounded-full">
                       <span className="text-[10px] font-roboto font-bold text-white leading-none">
@@ -202,11 +225,11 @@ const DefaultNav: React.FC<AppComponent> = ({ Cart }) => {
                   )}
                 </a>
                 <a
-                  className="relative inline-flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  className="relative inline-flex items-center justify-center p-0.5 md:p-2 rounded-full hover:bg-gray-100 transition-colors"
                   href={ROUTES.ORDERS}
                   title="My orders"
                 >
-                  <MdReceiptLong size={26} className="text-gray-700" />
+                  <MdReceiptLong className="text-gray-700 text-[22px]" />
                   {ordersNeedAttention && (
                     <span
                       className="absolute top-1 right-1 w-2.5 h-2.5 bg-orange-500 rounded-full ring-2 ring-white"
@@ -215,23 +238,23 @@ const DefaultNav: React.FC<AppComponent> = ({ Cart }) => {
                   )}
                 </a>
                 <a
-                  className="inline-flex items-center justify-center p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  className="inline-flex items-center justify-center p-0 md:p-2 rounded-full hover:bg-gray-100 transition-colors"
                   href={ROUTES.PROFILE}
                   title="Profile"
                 >
-                  <MdPersonOutline size={26} className="text-gray-700" />
+                  <MdPersonOutline className="text-gray-700 text-[25px]" />
                 </a>
               </div>
             ) : (
               <div className="flex items-center gap-2.5">
                 <a
-                  className="px-5 py-2 text-sm font-roboto font-medium text-Storepurple border border-Storepurple rounded-full hover:bg-purple-50 transition-colors"
+                  className="px-4 md:px-5 py-1 md:py-2 text-xs md:text-sm font-roboto font-bold md:font-medium text-Storepurple border border-Storepurple rounded-full hover:bg-purple-50 transition-colors"
                   href={ROUTES.LOGIN}
                 >
                   Login
                 </a>
                 <a
-                  className="px-5 py-2 text-sm font-roboto font-medium text-white bg-Storepurple rounded-full hover:bg-StorepurpleDark transition-colors"
+                  className="hidden md:flex px-5 py-2 text-sm font-roboto font-medium text-white bg-Storepurple rounded-full hover:bg-StorepurpleDark transition-colors"
                   href={ROUTES.SIGNUP}
                 >
                   Sign up

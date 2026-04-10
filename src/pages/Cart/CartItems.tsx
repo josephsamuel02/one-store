@@ -91,7 +91,7 @@ const CartItems: React.FC<AppComponent> = ({ cartItems, cartRowId, totalPrice, g
   return (
     <>
       {!checkout ? (
-        <div className="w-full md:w-10/12 md:p-6 h-auto mx-auto my-4 p-4 flex flex-col bg-white">
+        <div className="w-full md:w-10/12 md:p-6 h-auto mx-auto my-4 p-1 flex flex-col bg-white">
           <h3 className="text-2xl md:text-3xl p-4 text-black font-bold font-dayone">Cart</h3>
 
           {cartItems.length > 0 ? (
@@ -133,11 +133,11 @@ const CartItems: React.FC<AppComponent> = ({ cartItems, cartRowId, totalPrice, g
                   <div className="flex flex-wrap items-end justify-between gap-3 mt-3">
                     <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                       <span className="text-xs font-roboto text-gray-500">
-                        Each: <span className="font-semibold text-gray-700">₦{priceFormat.format(unitPrice)}</span>
+                        Each: <span className="font-semibold text-sm text-gray-700">₦{priceFormat.format(unitPrice)}</span>
                       </span>
                       <span className="text-sm md:text-base font-dayone text-gray-900">
-                        <span className="text-gray-600 font-roboto font-medium">
-                          ₦{priceFormat.format(unitPrice)} × {qty}
+                        <span className="text-gray-600 font-roboto font-semibold text-sm">
+                         × {qty}
                         </span>
                         <span className="mx-1.5 text-gray-400 font-roboto">=</span>
                         <span className="font-dayone">₦{priceFormat.format(unitPrice * qty)}</span>

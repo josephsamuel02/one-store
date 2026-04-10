@@ -124,7 +124,7 @@ const AdminProductDetails: React.FC = () => {
 
             <a
               href={`${ROUTES.ADMIN_EDIT_PRODUCT}/${id}`}
-              className="mt-4 w-full md:w-auto text-center px-8 py-3 text-base font-roboto font-bold text-white rounded-lg bg-purple-600 hover:bg-purple-700 transition-colors"
+              className="mt-4 w-full md:w-auto text-center px-8 py-3 text-base font-roboto font-bold text-white rounded-lg bg-Storepurple hover:bg-StorepurpleDark transition-colors"
             >
               Edit Product
             </a>

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
-import { MdInbox, MdSlideshow, MdStore, MdUpload, MdClose } from "react-icons/md";
+import { MdClose, MdInbox, MdSearch, MdSlideshow, MdStore, MdUpload } from "react-icons/md";
 
 interface AppState {
   page: string;
@@ -14,11 +14,24 @@ interface AppState2 {
   setPage: (item: any) => void;
 }
 
-const navItems = [
+const navItems: {
+  key: string;
+  label: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  section?: string;
+}[] = [
   { key: "orders", label: "Orders", icon: MdInbox },
-  { key: "store", label: "Store", icon: MdStore },
-  { key: "upload", label: "Upload", icon: MdUpload },
+  { key: "store", label: "Store", icon: MdStore, section: "Store" },
+  { key: "search", label: "Search", icon: MdSearch },
+  { key: "upload", label: "Upload", icon: MdUpload, section: "Other" },
 ];
+
+const navButtonClass = (active: boolean) =>
+  `w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-roboto font-medium transition-colors ${
+    active
+      ? "bg-purple-500/15 text-purple-400"
+      : "text-gray-400 hover:bg-gray-800/60 hover:text-gray-200"
+  }`;
 
 const SideNav: React.FC<AppState> = ({ page, setPage }) => {
   return (
@@ -26,19 +39,22 @@ const SideNav: React.FC<AppState> = ({ page, setPage }) => {
       <nav className="px-3 py-6 space-y-1">
         {navItems.map((item) => {
           const active = page === item.key;
+          const Icon = item.icon;
           return (
-            <button
-              key={item.key}
-              onClick={() => setPage(item.key)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-roboto font-medium transition-colors ${
-                active
-                  ? "bg-purple-500/15 text-purple-400"
-                  : "text-gray-400 hover:bg-gray-800/60 hover:text-gray-200"
-              }`}
-            >
-              <item.icon size={22} className={active ? "text-purple-400" : "text-gray-500"} />
-              {item.label}
-            </button>
+            <React.Fragment key={item.key}>
+              {item.section && (
+                <p className="px-4 pt-3 pb-1 text-[10px] font-roboto font-bold uppercase tracking-widest text-gray-600">
+                  {item.section}
+                </p>
+              )}
+              <button
+                onClick={() => setPage(item.key)}
+                className={navButtonClass(active)}
+              >
+                <Icon size={22} className={active ? "text-purple-400" : "text-gray-500"} />
+                {item.label}
+              </button>
+            </React.Fragment>
           );
         })}
       </nav>
@@ -74,29 +90,32 @@ const MobileNav: React.FC<AppState2> = ({ page, setPage, sidebarState, setsideba
         <nav className="px-3 py-4 space-y-1">
           {navItems.map((item) => {
             const active = page === item.key;
+            const Icon = item.icon;
             return (
-              <button
-                key={item.key}
-                onClick={() => {
-                  setPage(item.key);
-                  setsidebarState(false);
-                }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-roboto font-medium transition-colors ${
-                  active
-                    ? "bg-purple-500/15 text-purple-400"
-                    : "text-gray-400 hover:bg-gray-800/60 hover:text-gray-200"
-                }`}
-              >
-                <item.icon size={22} className={active ? "text-purple-400" : "text-gray-500"} />
-                {item.label}
-              </button>
+              <React.Fragment key={item.key}>
+                {item.section && (
+                  <p className="px-4 pt-3 pb-1 text-[10px] font-roboto font-bold uppercase tracking-widest text-gray-600">
+                    {item.section}
+                  </p>
+                )}
+                <button
+                  onClick={() => {
+                    setPage(item.key);
+                    setsidebarState(false);
+                  }}
+                  className={navButtonClass(active)}
+                >
+                  <Icon size={22} className={active ? "text-purple-400" : "text-gray-500"} />
+                  {item.label}
+                </button>
+              </React.Fragment>
             );
           })}
         </nav>
       </div>
 
       <button
-        className="md:hidden fixed bottom-6 left-6 w-14 h-14 rounded-full bg-purple-600 text-white shadow-lg shadow-purple-600/30 hover:bg-purple-700 transition-colors z-30 flex items-center justify-center"
+        className="md:hidden fixed bottom-6 left-6 w-14 h-14 rounded-full bg-Storepurple text-white shadow-lg shadow-purple-600/30 hover:bg-StorepurpleDark transition-colors z-30 flex items-center justify-center"
         onClick={() => setsidebarState(!sidebarState)}
       >
         <MdSlideshow size={26} />

@@ -17,7 +17,7 @@ const PayOfflineCard: React.FC<appState> = ({ setShowCard, TotalPrice, OrderId }
       <div className="w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
 
         {/* Top success strip */}
-        <div className="bg-gradient-to-br from-Storepurple to-purple-800 px-6 pt-8 pb-10 flex flex-col items-center gap-3">
+        <div className="bg-gradient-to-br from-Storepurple to-StorepurpleDark px-6 pt-8 pb-10 flex flex-col items-center gap-3">
           {/* Animated checkmark circle */}
           <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-1">
             <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -63,7 +63,7 @@ const PayOfflineCard: React.FC<appState> = ({ setShowCard, TotalPrice, OrderId }
                 href={ROUTES.CALLLINE}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-3 w-full py-3 px-4 bg-Storepurple hover:bg-purple-800 rounded-2xl text-white font-roboto text-sm font-medium transition-colors"
+                className="flex items-center gap-3 w-full py-3 px-4 bg-Storepurple hover:bg-StorepurpleDark rounded-2xl text-white font-roboto text-sm font-medium transition-colors"
               >
                 <MdCall size={18} />
                 <span>08081376616</span>

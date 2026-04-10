@@ -114,7 +114,7 @@ const AdminProfile: React.FC = () => {
           <h1 className="text-2xl font-dayone text-gray-100">Admin Profile</h1>
           <button
             onClick={() => { setEdit(!edit); setUserInfo({}); }}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-purple-600 text-white hover:bg-purple-700 transition-colors shadow-md shadow-purple-600/20"
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-Storepurple text-white hover:bg-StorepurpleDark transition-colors shadow-md shadow-purple-600/20"
           >
             <MdEdit size={20} />
           </button>
@@ -142,7 +142,7 @@ const AdminProfile: React.FC = () => {
               ))}
               <button
                 type="submit"
-                className="w-full py-3 text-base font-roboto font-bold text-white rounded-lg bg-purple-600 hover:bg-purple-700 transition-colors"
+                className="w-full py-3 text-base font-roboto font-bold text-white rounded-lg bg-Storepurple hover:bg-StorepurpleDark transition-colors"
               >
                 Save Changes
               </button>

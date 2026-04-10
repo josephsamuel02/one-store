@@ -118,7 +118,7 @@ const AdminLogin: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 text-base font-roboto font-bold text-white rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-[0.98] transition-all disabled:opacity-50 shadow-sm shadow-purple-600/20"
+              className="w-full py-3.5 text-base font-roboto font-bold text-white rounded-xl bg-Storepurple hover:bg-StorepurpleDark active:scale-[0.98] transition-all disabled:opacity-50 shadow-sm shadow-purple-600/20"
             >
               {loading ? "Signing in..." : "Sign In"}
             </button>

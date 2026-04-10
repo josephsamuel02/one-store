@@ -78,7 +78,7 @@ const Orders: React.FC = () => {
               href={ROUTES.CALLLINE}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 w-full py-3 px-4 bg-Storepurple hover:bg-purple-800 rounded-2xl text-white font-roboto text-sm font-medium transition-colors shadow-sm shadow-purple-200"
+              className="flex items-center gap-3 w-full py-3 px-4 bg-Storepurple hover:bg-StorepurpleDark rounded-2xl text-white font-roboto text-sm font-medium transition-colors shadow-sm shadow-purple-200"
             >
               <MdCall size={18} />
               <span>Call Us — 08081376616</span>
@@ -186,7 +186,7 @@ const Orders: React.FC = () => {
           target="_blank"
           rel="noreferrer"
           aria-label="Call Us"
-          className="w-[52px] h-[52px] flex items-center justify-center rounded-full bg-Storepurple hover:bg-purple-800 text-white shadow-lg shadow-purple-500/40 transition-all active:scale-95"
+          className="w-[52px] h-[52px] flex items-center justify-center rounded-full bg-Storepurple hover:bg-StorepurpleDark text-white shadow-lg shadow-purple-500/40 transition-all active:scale-95"
         >
           <MdCall size={24} />
         </a>

@@ -40,7 +40,7 @@ const SimilarProducts: React.FC<AppComponent> = ({ categoryProducts }) => {
                 </p>
               </a>
               <p
-                className=" w-full mx-0.5 py-1 text-center text-sm md:text-base text-white bg-Storepurple hover:bg-purple-800 rounded-sm cursor-pointer"
+                className=" w-full mx-0.5 py-1 text-center text-sm md:text-base text-white bg-Storepurple hover:bg-StorepurpleDark rounded-sm cursor-pointer"
                 // onClick={() =>
                 //    dispatch<any>(
                 //     addToCart({

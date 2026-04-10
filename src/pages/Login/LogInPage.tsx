@@ -114,7 +114,7 @@ const Login: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mx-auto px-6 py-2 my-4 text-center text-white text-xl font-nunito rounded-full bg-Storepurple hover:bg-purple-500 bg-gradient-to-r from-purple-500 hover:from-Storepurple transition-colors shadow-md disabled:opacity-50"
+              className="w-full mx-auto px-6 py-2 my-4 text-center text-white text-xl font-nunito rounded-full bg-Storepurple hover:bg-StorepurpleDark transition-colors shadow-md disabled:opacity-50"
             >
               {loading ? "Signing in..." : "Login"}
             </button>

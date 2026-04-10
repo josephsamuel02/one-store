@@ -231,7 +231,7 @@ const DefaultNav: React.FC<AppComponent> = ({ Cart }) => {
                   Login
                 </a>
                 <a
-                  className="px-5 py-2 text-sm font-roboto font-medium text-white bg-Storepurple rounded-full hover:bg-purple-800 transition-colors"
+                  className="px-5 py-2 text-sm font-roboto font-medium text-white bg-Storepurple rounded-full hover:bg-StorepurpleDark transition-colors"
                   href={ROUTES.SIGNUP}
                 >
                   Sign up
@@ -297,7 +297,7 @@ const DefaultNav: React.FC<AppComponent> = ({ Cart }) => {
           <a
             href={ROUTES.LANDINGPAGE}
             onClick={() => setCategoryOpen(false)}
-            className="flex items-center justify-center w-full py-2.5 rounded-xl bg-Storepurple text-white text-sm font-roboto font-medium hover:bg-purple-800 transition-colors"
+            className="flex items-center justify-center w-full py-2.5 rounded-xl bg-Storepurple text-white text-sm font-roboto font-medium hover:bg-StorepurpleDark transition-colors"
           >
             View All Products
           </a>

@@ -9,6 +9,7 @@ const ROUTES = {
   PROFILE: "/profile",
 
   ADMIN_LANDINGPAGE: "/admin",
+  ADMIN_SEARCH: "/admin/search",
   ADMIN_EDIT_PRODUCT: "/admin/edit_product",
   ADMIN_ORDER_DETAILS: "/admin/order_details",
   ADMIN_PRODUCT_DETAILS: "/admin/product_details",

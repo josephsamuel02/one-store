@@ -184,7 +184,7 @@ const ProductsPage: React.FC = () => {
 
                     {User && (
                       <button
-                        className="mt-2.5 w-full py-2 flex items-center justify-center gap-1.5 bg-Storepurple hover:bg-purple-800 text-white text-xs md:text-sm font-roboto font-medium rounded-lg transition-colors"
+                        className="mt-2.5 w-full py-2 flex items-center justify-center gap-1.5 bg-Storepurple hover:bg-StorepurpleDark text-white text-xs md:text-sm font-roboto font-medium rounded-lg transition-colors"
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
@@ -212,7 +212,7 @@ const ProductsPage: React.FC = () => {
             </p>
             <a
               href={ROUTES.LANDINGPAGE}
-              className="mt-6 px-6 py-2.5 bg-Storepurple text-white text-sm font-roboto font-medium rounded-full hover:bg-purple-800 transition-colors"
+              className="mt-6 px-6 py-2.5 bg-Storepurple text-white text-sm font-roboto font-medium rounded-full hover:bg-StorepurpleDark transition-colors"
             >
               Browse all products
             </a>

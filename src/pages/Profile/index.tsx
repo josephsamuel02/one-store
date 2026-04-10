@@ -323,7 +323,7 @@ const Profile: React.FC = () => {
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 py-3 text-sm font-roboto font-semibold text-white bg-Storepurple rounded-xl hover:bg-purple-800 transition-colors"
+                      className="flex-1 py-3 text-sm font-roboto font-semibold text-white bg-Storepurple rounded-xl hover:bg-StorepurpleDark transition-colors"
                     >
                       Save changes
                     </button>

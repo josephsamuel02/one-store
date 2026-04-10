@@ -26,7 +26,7 @@ const OrderItems: React.FC<AppComponent> = ({ orders }) => {
           <p className="text-lg font-roboto text-gray-500">No orders yet</p>
           <a
             href={ROUTES.LANDINGPAGE}
-            className="mt-4 px-6 py-2.5 bg-Storepurple text-white text-sm font-roboto font-medium rounded-full hover:bg-purple-800 transition-colors"
+            className="mt-4 px-6 py-2.5 bg-Storepurple text-white text-sm font-roboto font-medium rounded-full hover:bg-StorepurpleDark transition-colors"
           >
             Start shopping
           </a>

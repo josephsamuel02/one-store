@@ -162,7 +162,7 @@ const AdminOrderDetails: React.FC = () => {
           <div className="px-5 py-3 border-b border-gray-800/60 flex items-center justify-between">
             <h3 className="text-base font-dayone text-gray-200">
               Products
-              <span className="ml-2 px-2 py-0.5 text-xs bg-purple-600 text-white rounded-full">
+              <span className="ml-2 px-2 py-0.5 text-xs bg-Storepurple text-white rounded-full">
                 {products.length}
               </span>
             </h3>

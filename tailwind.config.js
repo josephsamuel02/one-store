@@ -25,7 +25,8 @@ export default {
       },
       colors: {
         navDarkBlue: "#010656",
-        Storepurple: "#6D28D9",
+        Storepurple: "#5B21B6",
+        StorepurpleDark: "#4C1D95",
       },
     },
   },

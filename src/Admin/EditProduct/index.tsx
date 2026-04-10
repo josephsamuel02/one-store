@@ -273,7 +273,7 @@ const Edit: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 text-base font-roboto font-bold text-white rounded-lg bg-purple-600 hover:bg-purple-700 transition-colors disabled:opacity-50"
+              className="w-full py-3 text-base font-roboto font-bold text-white rounded-lg bg-Storepurple hover:bg-StorepurpleDark transition-colors disabled:opacity-50"
             >
               {loading ? <ScaleLoader color="white" height={20} /> : "Update Product"}
             </button>

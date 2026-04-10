@@ -122,7 +122,7 @@ const ProductCard: React.FC<AppComponent> = ({ singleProduct, getCartInfo }) => 
 
             {User && (singleProduct.stock ?? 1) >= 1 && showBTN && (
               <p
-                className="mx-auto my-6 px-4 w-full h-auto py-4 text-xl text-white font-roboto flex flex-row items-center bg-Storepurple hover:bg-purple-700 rounded-md cursor-pointer"
+                className="mx-auto my-6 px-4 w-full h-auto py-4 text-xl text-white font-roboto flex flex-row items-center bg-Storepurple hover:bg-StorepurpleDark rounded-md cursor-pointer"
                 onClick={() => addToCart()}
               >
                 <span className="px-4">

@@ -31,7 +31,7 @@ const SuccessCard: React.FC<AppState> = ({ showCard, setShowCard, Text }) => {
             window.location.replace("/admin");
             setShowCard(false);
           }}
-          className="w-full py-3 text-base font-roboto font-bold text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+          className="w-full py-3 text-base font-roboto font-bold text-white bg-Storepurple hover:bg-StorepurpleDark rounded-lg transition-colors"
         >
           Done
         </button>

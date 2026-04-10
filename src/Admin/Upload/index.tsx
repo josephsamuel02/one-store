@@ -213,7 +213,7 @@ const AdminUpload: React.FC = () => {
               }`}
             >
               <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-colors ${
-                dragOver ? "bg-purple-600 text-white" : "bg-gray-800 text-gray-500"
+                dragOver ? "bg-Storepurple text-white" : "bg-gray-800 text-gray-500"
               }`}>
                 <MdImage size={32} />
               </div>
@@ -368,7 +368,7 @@ const AdminUpload: React.FC = () => {
                 type="button"
                 disabled={loading}
                 onClick={uploadProduct}
-                className="w-full flex items-center justify-center gap-2 py-3.5 text-base font-roboto font-bold text-white rounded-xl bg-purple-600 hover:bg-purple-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-purple-600/20 hover:shadow-md hover:shadow-purple-600/30"
+                className="w-full flex items-center justify-center gap-2 py-3.5 text-base font-roboto font-bold text-white rounded-xl bg-Storepurple hover:bg-StorepurpleDark active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-purple-600/20 hover:shadow-md hover:shadow-purple-600/30"
               >
                 {loading ? (
                   <ScaleLoader color="white" height={20} />

@@ -256,7 +256,7 @@ const CheckoutDetails: React.FC<AppComponent> = ({ CheckOutData }) => {
               <button
                 disabled={placing}
                 onClick={() => placeOrder("offline_payment")}
-                className="flex-1 py-3 px-4 text-sm font-roboto font-medium text-white bg-Storepurple rounded-lg hover:bg-purple-800 transition-colors disabled:opacity-50"
+                className="flex-1 py-3 px-4 text-sm font-roboto font-medium text-white bg-Storepurple rounded-lg hover:bg-StorepurpleDark transition-colors disabled:opacity-50"
               >
                 {placing ? "Placing Order..." : "Pay Offline"}
               </button>

@@ -56,7 +56,7 @@ const TopeSale: React.FC<AppComponent> = ({ Products, addToCart }) => {
 
                   {User && (
                     <button
-                      className="mt-2.5 w-full py-2 flex items-center justify-center gap-1.5 bg-Storepurple hover:bg-purple-800 text-white text-xs md:text-sm font-roboto font-medium rounded-lg transition-colors"
+                      className="mt-2.5 w-full py-2 flex items-center justify-center gap-1.5 bg-Storepurple hover:bg-StorepurpleDark text-white text-xs md:text-sm font-roboto font-medium rounded-lg transition-colors"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();

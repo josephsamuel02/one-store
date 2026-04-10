@@ -66,6 +66,7 @@ const App: React.FC = () => {
         {/* ADmin */}
 
         <Route index path={ROUTES.ADMIN_LANDINGPAGE} element={<Dashboard />} />
+        <Route path={ROUTES.ADMIN_SEARCH} element={<Dashboard />} />
         <Route
           index
           path={`${ROUTES.ADMIN_ORDER_DETAILS}/:id`}

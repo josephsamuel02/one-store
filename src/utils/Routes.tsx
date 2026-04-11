@@ -24,6 +24,7 @@ const ROUTES = {
   DASHBOARD: "/dashboard",
 
   ABOUTUS: "/about",
+  SERVICES: "/services",
   CONTACTUS: "/contact",
   TERMSANDCONS: "/terms_and_conditions",
 

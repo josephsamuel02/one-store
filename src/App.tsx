@@ -15,6 +15,7 @@ import Checkout from "./pages/Checkout/index";
 import Profile from "./pages/Profile/index";
 
 import About from "./pages/About";
+import Services from "./pages/Services";
 import Dashboard from "./Admin/Dashboard";
 import Edit from "./Admin/EditProduct";
 import AdminLogin from "./Admin/Login/LogInPage";
@@ -62,6 +63,7 @@ const App: React.FC = () => {
 
         <Route path={ROUTES.FORGOTPASSWORD} element={<ForgotPassword />} />
         <Route path={ROUTES.ABOUTUS} element={<About />} />
+        <Route path={ROUTES.SERVICES} element={<Services />} />
 
         {/* ADmin */}
 

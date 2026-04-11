@@ -10,11 +10,11 @@ const PartnerCard: React.FC = () => {
       </div>
 
       <div className="flex flex-col items-center px-5 pb-5 gap-4">
-        <div className="w-24 h-24 rounded-2xl bg-white border-2 border-purple-100 shadow-sm flex items-center justify-center overflow-hidden">
+        <div className="w-auto h-32 px-4 rounded-2xl bg-white border-2 border-purple-100 shadow-sm flex items-center justify-center overflow-hidden">
           <img
-            src="/img/p-one-logo.png"
-            alt="P-ONE Store"
-            className="w-full h-full object-contain p-2"
+            src="/img/Flashmart.jpg"
+            alt="Flashmart"
+            className="w-auto h-full object-contain py-2"
             onError={(e) => {
               const el = e.currentTarget;
               el.style.display = "none";
@@ -27,10 +27,10 @@ const PartnerCard: React.FC = () => {
         </div>
 
         <div className="text-center">
-          <h3 className="text-lg font-dayone text-gray-900 mb-1">P-ONE Store</h3>
+          {/* <h3 className="text-lg font-dayone text-gray-900 mb-1">Flashmart</h3> */}
           <p className="text-xs font-roboto text-gray-500 leading-relaxed">
             Your orders are fulfilled in partnership with{" "}
-            <span className="font-semibold text-gray-700">P-ONE Store</span>, our trusted
+            <span className="font-semibold text-gray-700">Flashmart</span>, our trusted
             supply partner.
           </p>
         </div>

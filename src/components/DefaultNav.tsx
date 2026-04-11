@@ -18,7 +18,7 @@ import { HiOutlineDesktopComputer } from "react-icons/hi";
 import { CgGym } from "react-icons/cg";
 
 interface AppComponent {
-  Cart: unknown[] | undefined;
+  Cart?: unknown[];
 }
 
 function isLoginExpired(): boolean {

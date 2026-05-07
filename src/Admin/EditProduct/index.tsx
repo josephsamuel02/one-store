@@ -48,6 +48,20 @@ const Edit: React.FC = () => {
     { value: true, label: "Yes" },
   ];
 
+  const categoryOptions = [
+    { value: "computers", label: "Computers" },
+    { value: "accessories", label: "Accessories" },
+    { value: "groceries", label: "Groceries" },
+    { value: "fashion", label: "Fashion" },
+    { value: "electronics", label: "Electronics" },
+    { value: "sports", label: "Sports" },
+    { value: "food", label: "Food" },
+    { value: "baby", label: "Baby" },
+    { value: "cosmetics", label: "Cosmetics" },
+    { value: "wine", label: "Wines and liquor" },
+    { value: "household", label: "Household" },
+  ];
+
   useEffect(() => {
     if (!adminToken) {
       navigate(ROUTES.ADMIN_LOGIN);
@@ -91,6 +105,10 @@ const Edit: React.FC = () => {
     setNewValue((prev: any) => ({ ...prev, PayOnDelivery: option.value }));
   };
 
+  const handleCategoryChange = (option: any) => {
+    setNewValue((prev: any) => ({ ...prev, category: option.value }));
+  };
+
   const uploadProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -123,6 +141,7 @@ const Edit: React.FC = () => {
         old_price: newValue.old_price ? Number(newValue.old_price) : null,
         price: Number(newValue.price),
         stock: newValue.stock ? Number(newValue.stock) : null,
+        category: newValue.category,
         PayOnDelivery: newValue.PayOnDelivery,
         image: imageUrl,
       };
@@ -257,6 +276,17 @@ const Edit: React.FC = () => {
                 defaultValue={product.stock}
                 onChange={handleInputChange}
                 className={inputClass}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">Category</label>
+              <Select
+                options={categoryOptions}
+                defaultValue={categoryOptions.find((o) => o.value === product.category) || null}
+                onChange={handleCategoryChange}
+                styles={darkSelectStyles}
+                placeholder="Select a category..."
               />
             </div>
 

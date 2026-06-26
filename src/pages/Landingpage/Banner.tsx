@@ -6,6 +6,14 @@ import { AiOutlineShopping } from "react-icons/ai";
 import { BsPhone } from "react-icons/bs";
 import { HiOutlineDesktopComputer } from "react-icons/hi";
 import { CgGym } from "react-icons/cg";
+import {
+  MdCardGiftcard,
+  MdFastfood,
+  MdHealthAndSafety,
+  MdIcecream,
+  MdKitchen,
+  MdMedication,
+} from "react-icons/md";
 import ROUTES from "../../utils/Routes";
 import { Carousel } from "react-responsive-carousel";
 import "react-responsive-carousel/lib/styles/carousel.min.css";
@@ -71,6 +79,36 @@ const Banner: React.FC = () => {
       name: "Wines & Drinks",
       icon: <FaWineBottle size={18} className="text-Storepurple" />,
       url: "wine",
+    },
+    {
+      name: "Health",
+      icon: <MdHealthAndSafety size={18} className="text-Storepurple" />,
+      url: "health",
+    },
+    {
+      name: "Gift items",
+      icon: <MdCardGiftcard size={18} className="text-Storepurple" />,
+      url: "gifts",
+    },
+    {
+      name: "Kitchen utensils",
+      icon: <MdKitchen size={18} className="text-Storepurple" />,
+      url: "kitchen",
+    },
+    {
+      name: "Yoghurt",
+      icon: <MdIcecream size={18} className="text-Storepurple" />,
+      url: "yoghurt",
+    },
+    {
+      name: "Snacks",
+      icon: <MdFastfood size={18} className="text-Storepurple" />,
+      url: "snacks",
+    },
+    {
+      name: "Medicine",
+      icon: <MdMedication size={18} className="text-Storepurple" />,
+      url: "medicine",
     },
   ];
 

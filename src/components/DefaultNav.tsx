@@ -2,7 +2,13 @@ import React, { useCallback, useEffect, useState } from "react";
 import ROUTES from "../utils/Routes";
 import { supabase } from "../DB/supabase";
 import {
+  MdCardGiftcard,
   MdClose,
+  MdFastfood,
+  MdHealthAndSafety,
+  MdIcecream,
+  MdKitchen,
+  MdMedication,
   MdMenu,
   MdOutlineLocalGroceryStore,
   MdPersonOutline,
@@ -82,6 +88,36 @@ const DefaultNav: React.FC<AppComponent> = ({ Cart }) => {
       name: "Wines & Drinks",
       url: "wine",
       icon: <FaWineBottle size={18} className="text-Storepurple" />,
+    },
+    {
+      name: "Health",
+      url: "health",
+      icon: <MdHealthAndSafety size={18} className="text-Storepurple" />,
+    },
+    {
+      name: "Gift items",
+      url: "gifts",
+      icon: <MdCardGiftcard size={18} className="text-Storepurple" />,
+    },
+    {
+      name: "Kitchen utensils",
+      url: "kitchen",
+      icon: <MdKitchen size={18} className="text-Storepurple" />,
+    },
+    {
+      name: "Yoghurt",
+      url: "yoghurt",
+      icon: <MdIcecream size={18} className="text-Storepurple" />,
+    },
+    {
+      name: "Snacks",
+      url: "snacks",
+      icon: <MdFastfood size={18} className="text-Storepurple" />,
+    },
+    {
+      name: "Medicine",
+      url: "medicine",
+      icon: <MdMedication size={18} className="text-Storepurple" />,
     },
   ];
 

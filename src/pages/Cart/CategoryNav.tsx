@@ -11,10 +11,15 @@ const CategoryNav = () => {
     { value: "/category?category=electronics", label: "electronics" },
     { value: "/category?category=sports", label: "sports" },
     { value: "/category?category=food", label: "food" },
-    { name: " /category?category=body_care", label: "Body Care & Hygiene" },
-    { name: "/category?category=cosmetics", label: "cosmetics" },
-    { name: "/category?category=wine", label: "Wine" },
-    { name: "/category?category=household", label: "household" },
+    { value: "/category?category=cosmetics", label: "cosmetics" },
+    { value: "/category?category=wine", label: "Wine" },
+    { value: "/category?category=household", label: "household" },
+    { value: "/category?category=health", label: "Health" },
+    { value: "/category?category=gifts", label: "Gift items" },
+    { value: "/category?category=kitchen", label: "Kitchen utensils" },
+    { value: "/category?category=yoghurt", label: "Yoghurt" },
+    { value: "/category?category=snacks", label: "Snacks" },
+    { value: "/category?category=medicine", label: "Medicine" },
   ];
   return (
     <div className="mx-auto py-3 w-full h-auto bg-white px-4 flex flex-row rounded">

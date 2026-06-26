@@ -4,6 +4,7 @@ import ROUTES from "../../utils/Routes";
 import Orders from "./Orders";
 import Store from "./Store";
 import Search from "./Search";
+import Users from "./Users";
 import Upload from "../Upload";
 import SideNav, { MobileNav } from "../components/SideNav";
 import AdminNav from "../components/AdminNav";
@@ -52,6 +53,7 @@ const Dashboard: React.FC = () => {
         <main className="flex-1 overflow-y-auto">
           {page === "orders" && <Orders />}
           {page === "store" && <Store />}
+          {page === "users" && <Users />}
           {page === "search" && <Search />}
           {page === "upload" && <Upload />}
         </main>

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
-import { MdClose, MdInbox, MdSearch, MdSlideshow, MdStore, MdUpload } from "react-icons/md";
+import { MdClose, MdInbox, MdPeople, MdSearch, MdSlideshow, MdStore, MdUpload } from "react-icons/md";
 
 interface AppState {
   page: string;
@@ -22,6 +22,7 @@ const navItems: {
 }[] = [
   { key: "orders", label: "Orders", icon: MdInbox },
   { key: "store", label: "Store", icon: MdStore, section: "Store" },
+  { key: "users", label: "Users", icon: MdPeople },
   { key: "search", label: "Search", icon: MdSearch },
   { key: "upload", label: "Upload", icon: MdUpload, section: "Other" },
 ];

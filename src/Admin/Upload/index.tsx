@@ -47,6 +47,7 @@ const AdminUpload: React.FC = () => {
   const [imagePreview, setImagePreview] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string>("");
 
   const [product, setProduct] = useState({
     name: "",
@@ -71,6 +72,12 @@ const AdminUpload: React.FC = () => {
     { value: "cosmetics", label: "Cosmetics" },
     { value: "wine", label: "Wines and liquor" },
     { value: "household", label: "Household" },
+    { value: "health", label: "Health" },
+    { value: "gifts", label: "Gift items" },
+    { value: "kitchen", label: "Kitchen utensils" },
+    { value: "yoghurt", label: "Yoghurt" },
+    { value: "snacks", label: "Snacks" },
+    { value: "medicine", label: "Medicine" },
   ];
 
   const payOnDeliveryOptions = [
@@ -113,6 +120,18 @@ const AdminUpload: React.FC = () => {
 
     setLoading(true);
     try {
+      // DEBUG: Log session state at start
+      const { data: sessionData } = await supabase.auth.getSession();
+      const debugSession = {
+        hasSession: !!sessionData.session,
+        uid: sessionData.session?.user?.id?.slice(0,8) + "..." || "null",
+        adminTokenExists: !!adminToken,
+        adminTokenPrefix: adminToken?.slice(0,8) || "null",
+        match: sessionData.session?.user?.id === adminToken
+      };
+      console.log("[DEBUG] Session check:", debugSession);
+      setDebugInfo(JSON.stringify(debugSession, null, 2));
+
       const fileName = `${v4()}_${imageFile.name}`;
       const { error: storageError } = await supabase.storage
         .from("products")
@@ -127,7 +146,8 @@ const AdminUpload: React.FC = () => {
       const { data: urlData } = supabase.storage.from("products").getPublicUrl(fileName);
       const imageUrl = urlData.publicUrl;
 
-      const { error: insertError } = await supabase.from("products").insert({
+      // DEBUG: Log insert payload
+      const insertPayload = {
         image: imageUrl,
         name: product.name,
         productDetails: product.productDetails || null,
@@ -140,10 +160,15 @@ const AdminUpload: React.FC = () => {
         category: product.category,
         PayOnDelivery: product.PayOnDelivery,
         uploaded_by: adminToken,
-      });
+      };
+      console.log("[DEBUG] Insert payload:", insertPayload);
+
+      const { error: insertError } = await supabase.from("products").insert(insertPayload);
 
       if (insertError) {
-        console.error(insertError);
+        const errStr = JSON.stringify(insertError, null, 2);
+        console.error("[DEBUG] Insert error full:", errStr);
+        setDebugInfo(prev => prev + "\n\nINSERT ERROR:\n" + errStr.slice(0, 300));
         toast.error("Product save failed: " + insertError.message);
         return;
       }
@@ -171,6 +196,13 @@ const AdminUpload: React.FC = () => {
         <h2 className="text-2xl md:text-3xl text-gray-100 font-dayone">Upload Product</h2>
         <p className="text-sm text-gray-500 font-roboto mt-1">Add a new product to your store</p>
       </div>
+
+      {debugInfo && (
+        <div className="mb-4 p-4 bg-red-900/30 border border-red-700 rounded-lg">
+          <h3 className="text-red-400 text-xs font-bold uppercase mb-2">Debug Info (COPY THIS):</h3>
+          <pre className="text-xs text-red-300 whitespace-pre-wrap overflow-auto max-h-40">{debugInfo}</pre>
+        </div>
+      )}
 
       <div className="bg-gray-900 rounded-2xl border border-gray-800/60 overflow-hidden">
         <div className="p-6 md:p-8 bg-gradient-to-b from-gray-800/50 to-gray-900 border-b border-gray-800/60">

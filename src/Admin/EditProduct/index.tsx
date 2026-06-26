@@ -60,6 +60,12 @@ const Edit: React.FC = () => {
     { value: "cosmetics", label: "Cosmetics" },
     { value: "wine", label: "Wines and liquor" },
     { value: "household", label: "Household" },
+    { value: "health", label: "Health" },
+    { value: "gifts", label: "Gift items" },
+    { value: "kitchen", label: "Kitchen utensils" },
+    { value: "yoghurt", label: "Yoghurt" },
+    { value: "snacks", label: "Snacks" },
+    { value: "medicine", label: "Medicine" },
   ];
 
   useEffect(() => {

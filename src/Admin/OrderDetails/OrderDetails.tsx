@@ -86,6 +86,13 @@ const AdminOrderDetails: React.FC = () => {
   }
 
   const products: any[] = order.products ?? [];
+  const deliveryMeta = products[0]?.deliveryInfo ?? {};
+  const deliveryAddress =
+    order.delivery_address ?? order.deliveryAddress ?? order.address ?? deliveryMeta.deliveryAddress ?? null;
+  const whatsappNumber =
+    order.whatsapp_number ?? order.whatsappNumber ?? deliveryMeta.whatsappNumber ?? null;
+  const alternativePhone =
+    order.alternative_phone ?? order.alternativePhone ?? deliveryMeta.alternativePhone ?? null;
   const status = ORDER_STATUSES[order.orderLevel] ?? ORDER_STATUSES[0];
   const orderDate = order.created_at
     ? new Date(order.created_at).toLocaleDateString("en-US", {
@@ -150,6 +157,22 @@ const AdminOrderDetails: React.FC = () => {
             <div>
               <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider">Payment</p>
               <p className="text-sm font-roboto text-gray-300">{order.paymentMedium ?? "—"}</p>
+            </div>
+            {whatsappNumber && (
+              <div>
+                <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider">WhatsApp</p>
+                <p className="text-sm font-roboto text-gray-300">{whatsappNumber}</p>
+              </div>
+            )}
+            {alternativePhone && (
+              <div>
+                <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider">Alt. Phone</p>
+                <p className="text-sm font-roboto text-gray-300">{alternativePhone}</p>
+              </div>
+            )}
+            <div className="sm:col-span-2">
+              <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider">Delivery Address</p>
+              <p className="text-sm font-roboto text-gray-200">{deliveryAddress || "—"}</p>
             </div>
             <div className="sm:col-span-2">
               <p className="text-xs text-gray-500 font-roboto uppercase tracking-wider">Order ID</p>

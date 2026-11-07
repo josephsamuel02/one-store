@@ -22,7 +22,6 @@ import AdminLogin from "./Admin/Login/LogInPage";
 import AdminOrderDetails from "./Admin/OrderDetails/OrderDetails";
 import AdminProductDetails from "./Admin/ProductDetails";
 import AdminProfile from "./Admin/Profile";
-import AdminUpload from "./Admin/Upload";
 
 const checkTokenExpiry = () => {
   const expiryDate = localStorage.getItem("login_expiry_date");
@@ -79,7 +78,7 @@ const App: React.FC = () => {
           path={`${ROUTES.ADMIN_PRODUCT_DETAILS}/:id`}
           element={<AdminProductDetails />}
         />
-        <Route index path={ROUTES.ADMIN_UPLOAD_PRODUCTS} element={<AdminUpload />} />
+        <Route index path={ROUTES.ADMIN_UPLOAD_PRODUCTS} element={<Dashboard />} />
         <Route path={`${ROUTES.ADMIN_EDIT_PRODUCT}/:id`} element={<Edit />} />
         <Route path={ROUTES.ADMIN_LOGIN} element={<AdminLogin />} />
         <Route path={ROUTES.ADMIN_PROFILE} element={<AdminProfile />} />

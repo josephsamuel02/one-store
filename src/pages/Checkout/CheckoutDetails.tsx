@@ -40,6 +40,9 @@ const CheckoutDetails: React.FC<AppComponent> = ({ CheckOutData }) => {
         return;
       }
       setUserInfo(data);
+      if (data.address) {
+        setDeliveryAddress((prev) => prev || data.address);
+      }
     } catch (error) {
       console.error("Unable to fetch user", error);
     }
@@ -57,9 +60,23 @@ const CheckoutDetails: React.FC<AppComponent> = ({ CheckOutData }) => {
 
     setPlacing(true);
     try {
-      const orderRow = {
+      const cleanAddress = deliveryAddress.trim();
+      const cleanWhatsapp = whatsappNumber.trim() || null;
+      const cleanAltPhone = alternativePhone.trim() || null;
+
+      const deliveryInfo = {
+        deliveryAddress: cleanAddress,
+        whatsappNumber: cleanWhatsapp,
+        alternativePhone: cleanAltPhone,
+      };
+
+      const enrichedProducts = CheckOutData.map((item: any, idx: number) =>
+        idx === 0 ? { ...item, deliveryInfo } : item
+      );
+
+      const baseOrderRow = {
         user_id: token,
-        products: CheckOutData,
+        products: enrichedProducts,
         total_price: computedTotal,
         email: userInfo.email ?? null,
         name: userInfo.name ?? null,
@@ -69,11 +86,35 @@ const CheckoutDetails: React.FC<AppComponent> = ({ CheckOutData }) => {
         orderLevel: 0,
       };
 
-      const { data: newOrder, error } = await supabase
+      let { data: newOrder, error } = await supabase
         .from("order")
-        .insert(orderRow)
+        .insert({
+          ...baseOrderRow,
+          delivery_address: cleanAddress,
+          whatsapp_number: cleanWhatsapp,
+          alternative_phone: cleanAltPhone,
+        })
         .select("id")
         .single();
+
+      if (
+        error &&
+        (error.code === "PGRST204" ||
+          error.code === "42703" ||
+          String(error.message).toLowerCase().includes("column"))
+      ) {
+        const fallback = await supabase
+          .from("order")
+          .insert(baseOrderRow)
+          .select("id")
+          .single();
+        newOrder = fallback.data;
+        error = fallback.error;
+      }
+
+      if (cleanAddress && cleanAddress !== userInfo.address) {
+        void supabase.from("user").update({ address: cleanAddress }).eq("id", token);
+      }
 
       if (error) {
         console.error("Order error:", error);
@@ -87,6 +128,11 @@ const CheckoutDetails: React.FC<AppComponent> = ({ CheckOutData }) => {
         } else {
           toast.error(error.message || "Failed to place order");
         }
+        return;
+      }
+
+      if (!newOrder) {
+        toast.error("Failed to place order");
         return;
       }
 

@@ -1,27 +1,15 @@
 import React, { useCallback, useEffect, useState } from "react";
 import ROUTES from "../utils/Routes";
 import { supabase } from "../DB/supabase";
+import { STORE_CATEGORIES } from "../utils/categories";
 import {
-  MdCardGiftcard,
   MdClose,
-  MdFastfood,
-  MdHealthAndSafety,
-  MdIcecream,
-  MdKitchen,
-  MdMedication,
   MdMenu,
   MdOutlineLocalGroceryStore,
   MdPersonOutline,
   MdReceiptLong,
   MdSearch,
 } from "react-icons/md";
-import { FaHeadphones, FaWineBottle } from "react-icons/fa6";
-import { GiLipstick, GiLiquidSoap } from "react-icons/gi";
-import { LuApple, LuBaby, LuRadioReceiver, LuShirt } from "react-icons/lu";
-import { AiOutlineShopping } from "react-icons/ai";
-import { BsPhone } from "react-icons/bs";
-import { HiOutlineDesktopComputer } from "react-icons/hi";
-import { CgGym } from "react-icons/cg";
 
 interface AppComponent {
   Cart?: unknown[];
@@ -39,87 +27,6 @@ const DefaultNav: React.FC<AppComponent> = ({ Cart }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [ordersNeedAttention, setOrdersNeedAttention] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
-
-  const CATEGORIES = [
-    {
-      name: "Computers",
-      url: "computers",
-      icon: <HiOutlineDesktopComputer size={20} className="text-Storepurple" />,
-    },
-    {
-      name: "Electronics",
-      url: "electronics",
-      icon: <LuRadioReceiver size={18} className="text-Storepurple" />,
-    },
-    {
-      name: "Grocery",
-      url: "groceries",
-      icon: <AiOutlineShopping size={18} className="text-Storepurple" />,
-    },
-    {
-      name: "Phone & Tablets",
-      url: "phones",
-      icon: <BsPhone size={18} className="text-Storepurple" />,
-    },
-    {
-      name: "Accessories",
-      url: "accessories",
-      icon: <FaHeadphones size={18} className="text-Storepurple" />,
-    },
-    {
-      name: "Fashion",
-      url: "fashion",
-      icon: <LuShirt size={18} className="text-Storepurple" />,
-    },
-    { name: "Sport", url: "sport", icon: <CgGym size={18} className="text-Storepurple" /> },
-    { name: "Food", url: "food", icon: <LuApple size={18} className="text-Storepurple" /> },
-    {
-      name: "Body Care",
-      url: "body_care",
-      icon: <GiLiquidSoap size={18} className="text-Storepurple" />,
-    },
-    { name: "Baby", url: "baby", icon: <LuBaby size={18} className="text-Storepurple" /> },
-    {
-      name: "Cosmetics",
-      url: "cosmetics",
-      icon: <GiLipstick size={18} className="text-Storepurple" />,
-    },
-    {
-      name: "Wines & Drinks",
-      url: "wine",
-      icon: <FaWineBottle size={18} className="text-Storepurple" />,
-    },
-    {
-      name: "Health",
-      url: "health",
-      icon: <MdHealthAndSafety size={18} className="text-Storepurple" />,
-    },
-    {
-      name: "Gift items",
-      url: "gifts",
-      icon: <MdCardGiftcard size={18} className="text-Storepurple" />,
-    },
-    {
-      name: "Kitchen utensils",
-      url: "kitchen",
-      icon: <MdKitchen size={18} className="text-Storepurple" />,
-    },
-    {
-      name: "Yoghurt",
-      url: "yoghurt",
-      icon: <MdIcecream size={18} className="text-Storepurple" />,
-    },
-    {
-      name: "Snacks",
-      url: "snacks",
-      icon: <MdFastfood size={18} className="text-Storepurple" />,
-    },
-    {
-      name: "Medicine",
-      url: "medicine",
-      icon: <MdMedication size={18} className="text-Storepurple" />,
-    },
-  ];
 
   const fetchOrdersAttention = useCallback(async () => {
     const uid = localStorage.getItem("one_store_login");
@@ -169,12 +76,17 @@ const DefaultNav: React.FC<AppComponent> = ({ Cart }) => {
       if (event === "SIGNED_OUT") {
         localStorage.removeItem("one_store_login");
         localStorage.removeItem("login_expiry_date");
+        localStorage.removeItem("one_store_admin");
         setLoggedIn(false);
         setOrdersNeedAttention(false);
         return;
       }
       if (session?.user?.id) {
         localStorage.setItem("one_store_login", session.user.id);
+        const currentAdmin = localStorage.getItem("one_store_admin");
+        if (currentAdmin && currentAdmin !== session.user.id) {
+          localStorage.removeItem("one_store_admin");
+        }
         if (isLoginExpired()) {
           localStorage.setItem("login_expiry_date", String(Date.now() + 24 * 60 * 60 * 1000));
         }
@@ -232,13 +144,13 @@ const DefaultNav: React.FC<AppComponent> = ({ Cart }) => {
 
           <form onSubmit={handleSearch} className="flex flex-1 max-w-lg mx-0 md:mx-auto">
             <div className="relative w-full">
-              <MdSearch className="absolute left-2.5 md:left-3.5 top-1/2 -translate-y-1/2 text-[20px] md-text-[30px] text-gray-400" />
+              <MdSearch className="absolute left-2.5 md:left-3.5 top-1/2 -translate-y-1/2 text-[20px] md:text-[22px] text-gray-400" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search products..."
-                className="w-full pl-8 md:pl-10 pr-2 md:pr-4 py-1.5  md:py-2.5 text-xs md:text-sm font-roboto bg-gray-50 border border-gray-200 rounded-full outline-none transition-all focus:border-Storepurple focus:ring-2 focus:ring-purple-100"
+                className="w-full pl-8 md:pl-10 pr-2 md:pr-4 py-1.5 md:py-2.5 text-xs md:text-sm font-roboto bg-gray-50 border border-gray-200 rounded-full outline-none transition-all focus:border-Storepurple focus:ring-2 focus:ring-purple-100"
               />
             </div>
           </form>
@@ -338,15 +250,15 @@ const DefaultNav: React.FC<AppComponent> = ({ Cart }) => {
 
         {/* Category list */}
         <nav className="flex-1 overflow-y-auto px-3 pb-6">
-          {CATEGORIES.map((cat) => (
+          {STORE_CATEGORIES.map((cat) => (
             <a
-              key={cat.url}
-              href={`${ROUTES.CATEGORY}?category=${cat.url}`}
+              key={cat.value}
+              href={`${ROUTES.CATEGORY}?category=${cat.value}`}
               onClick={() => setCategoryOpen(false)}
               className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-gray-700 font-roboto hover:bg-purple-50 hover:text-Storepurple transition-colors"
             >
-              <span className="flex-shrink-0">{cat.icon}</span>
-              <span>{cat.name}</span>
+              <span className="flex-shrink-0">{cat.renderIcon()}</span>
+              <span>{cat.label}</span>
             </a>
           ))}
         </nav>

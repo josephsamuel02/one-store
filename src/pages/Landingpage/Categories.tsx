@@ -6,9 +6,9 @@ const Categories: React.FC = () => {
     { name: "Computing", img: "/img/computers.png", url: "computers" },
     { name: "Electronics", img: "/img/electronics.png", url: "electronics" },
     { name: "Groceries", img: "/img/groceries.png", url: "groceries" },
-    { name: "Phone & Tablets", img: "/img/phone and tablet.png", url: "phone" },
+    { name: "Phone & Tablets", img: "/img/phone and tablet.png", url: "phones" },
     { name: "Accessories", img: "/img/accessories.png", url: "accessories" },
-    { name: "Body Care", img: "/img/body care.png", url: "body" },
+    { name: "Body Care", img: "/img/body care.png", url: "body_care" },
   ];
 
   return (

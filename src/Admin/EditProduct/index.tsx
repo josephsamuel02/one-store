@@ -1,13 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { v4 } from "uuid";
 import Select from "react-select";
 import { toast, ToastContainer } from "react-toastify";
 import ScaleLoader from "react-spinners/ScaleLoader";
 import DefaultNav from "../components/AdminNav";
 import { supabase } from "../../DB/supabase";
 import ROUTES from "../../utils/Routes";
+import { CATEGORY_SELECT_OPTIONS, findCategoryBySlug } from "../../utils/categories";
+import {
+  isSupportedImageFile,
+  prepareProductImageUpload,
+  verifyAdminSession,
+} from "../../utils/adminAuth";
 
 const darkSelectStyles = {
   control: (base: any, state: any) => ({
@@ -35,7 +40,6 @@ const darkSelectStyles = {
 const Edit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const adminToken = localStorage.getItem("one_store_admin");
 
   const [product, setProduct] = useState<any>(null);
   const [newValue, setNewValue] = useState<any>({});
@@ -48,33 +52,18 @@ const Edit: React.FC = () => {
     { value: true, label: "Yes" },
   ];
 
-  const categoryOptions = [
-    { value: "computers", label: "Computers" },
-    { value: "accessories", label: "Accessories" },
-    { value: "groceries", label: "Groceries" },
-    { value: "fashion", label: "Fashion" },
-    { value: "electronics", label: "Electronics" },
-    { value: "sports", label: "Sports" },
-    { value: "food", label: "Food" },
-    { value: "baby", label: "Baby" },
-    { value: "cosmetics", label: "Cosmetics" },
-    { value: "wine", label: "Wines and liquor" },
-    { value: "household", label: "Household" },
-    { value: "health", label: "Health" },
-    { value: "gifts", label: "Gift items" },
-    { value: "kitchen", label: "Kitchen utensils" },
-    { value: "yoghurt", label: "Yoghurt" },
-    { value: "snacks", label: "Snacks" },
-    { value: "medicine", label: "Medicine" },
-  ];
-
   useEffect(() => {
-    if (!adminToken) {
-      navigate(ROUTES.ADMIN_LOGIN);
-      return;
-    }
+    let active = true;
 
-    const fetchProduct = async () => {
+    const init = async () => {
+      const check = await verifyAdminSession();
+      if (!active) return;
+      if (!check.ok) {
+        toast.error(check.reason || "Please sign in as an admin.");
+        navigate(ROUTES.ADMIN_LOGIN);
+        return;
+      }
+
       if (!id) return;
       const { data, error } = await supabase
         .from("products")
@@ -82,24 +71,37 @@ const Edit: React.FC = () => {
         .eq("id", id)
         .maybeSingle();
 
+      if (!active) return;
       if (error || !data) {
         console.error("Failed to fetch product:", error);
         toast.error("Product not found");
         return;
       }
-      setProduct(data);
-      setNewValue(data);
+
+      const matchedCat = findCategoryBySlug(data.category);
+      const normalized = {
+        ...data,
+        category: matchedCat ? matchedCat.value : data.category,
+      };
+      setProduct(normalized);
+      setNewValue(normalized);
     };
 
-    void fetchProduct();
-  }, [id, adminToken, navigate]);
+    void init();
+    return () => {
+      active = false;
+    };
+  }, [id, navigate]);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setImagePreview(URL.createObjectURL(file));
-      setImageFile(file);
+    if (!file) return;
+    if (!isSupportedImageFile(file)) {
+      toast.error("Please select a valid image file.");
+      return;
     }
+    setImagePreview(URL.createObjectURL(file));
+    setImageFile(file);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
@@ -112,7 +114,7 @@ const Edit: React.FC = () => {
   };
 
   const handleCategoryChange = (option: any) => {
-    setNewValue((prev: any) => ({ ...prev, category: option.value }));
+    setNewValue((prev: any) => ({ ...prev, category: option?.value ?? "" }));
   };
 
   const uploadProduct = async (e: React.FormEvent) => {
@@ -120,17 +122,26 @@ const Edit: React.FC = () => {
     setLoading(true);
 
     try {
+      const check = await verifyAdminSession();
+      if (!check.ok) {
+        toast.error(check.reason || "Admin session expired. Redirecting to login...");
+        setTimeout(() => navigate(ROUTES.ADMIN_LOGIN), 1200);
+        return;
+      }
+
       let imageUrl = newValue.image;
 
       if (imageFile) {
-        const fileName = `${v4()}_${imageFile.name}`;
+        const { fileName, contentType } = prepareProductImageUpload(imageFile);
         const { error: storageError } = await supabase.storage
           .from("products")
-          .upload(fileName, imageFile);
+          .upload(fileName, imageFile, {
+            contentType,
+            upsert: false,
+          });
 
         if (storageError) {
           toast.error("Image upload failed: " + storageError.message);
-          setLoading(false);
           return;
         }
 
@@ -141,21 +152,22 @@ const Edit: React.FC = () => {
       const updatePayload: any = {
         name: newValue.name,
         productDetails: newValue.productDetails,
-        features: typeof newValue.features === "string"
-          ? newValue.features.split(",").map((f: string) => f.trim()).filter(Boolean)
-          : newValue.features,
+        features:
+          typeof newValue.features === "string"
+            ? newValue.features
+                .split(",")
+                .map((f: string) => f.trim())
+                .filter(Boolean)
+            : newValue.features,
         old_price: newValue.old_price ? Number(newValue.old_price) : null,
         price: Number(newValue.price),
-        stock: newValue.stock ? Number(newValue.stock) : null,
+        stock: newValue.stock !== "" && newValue.stock != null ? Number(newValue.stock) : null,
         category: newValue.category,
         PayOnDelivery: newValue.PayOnDelivery,
         image: imageUrl,
       };
 
-      const { error } = await supabase
-        .from("products")
-        .update(updatePayload)
-        .eq("id", id);
+      const { error } = await supabase.from("products").update(updatePayload).eq("id", id);
 
       if (error) {
         toast.error("Failed to update: " + error.message);
@@ -172,7 +184,8 @@ const Edit: React.FC = () => {
     }
   };
 
-  const inputClass = "w-full px-4 py-3 text-sm font-roboto text-gray-200 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all placeholder:text-gray-600";
+  const inputClass =
+    "w-full px-4 py-3 text-sm font-roboto text-gray-200 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all placeholder:text-gray-600";
 
   if (!product) {
     return (
@@ -212,7 +225,9 @@ const Edit: React.FC = () => {
 
           <form onSubmit={uploadProduct} className="space-y-4">
             <div>
-              <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">Product Image</label>
+              <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">
+                Product Image
+              </label>
               <input
                 type="file"
                 accept="image/*"
@@ -222,7 +237,9 @@ const Edit: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">Product Name</label>
+              <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">
+                Product Name
+              </label>
               <textarea
                 name="name"
                 defaultValue={product.name}
@@ -232,7 +249,9 @@ const Edit: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">Product Details</label>
+              <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">
+                Product Details
+              </label>
               <textarea
                 name="productDetails"
                 defaultValue={product.productDetails}
@@ -242,10 +261,14 @@ const Edit: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">Features (comma-separated)</label>
+              <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">
+                Features (comma-separated)
+              </label>
               <textarea
                 name="features"
-                defaultValue={Array.isArray(product.features) ? product.features.join(", ") : product.features}
+                defaultValue={
+                  Array.isArray(product.features) ? product.features.join(", ") : product.features
+                }
                 onChange={handleInputChange}
                 className={`${inputClass} h-16 resize-none`}
               />
@@ -253,9 +276,12 @@ const Edit: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">Old Price &#8358;</label>
+                <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">
+                  Old Price &#8358;
+                </label>
                 <input
                   type="number"
+                  step="any"
                   name="old_price"
                   defaultValue={product.old_price}
                   onChange={handleInputChange}
@@ -263,9 +289,12 @@ const Edit: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">Price &#8358;</label>
+                <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">
+                  Price &#8358;
+                </label>
                 <input
                   type="number"
+                  step="any"
                   name="price"
                   defaultValue={product.price}
                   onChange={handleInputChange}
@@ -275,7 +304,9 @@ const Edit: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">Stock Quantity</label>
+              <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">
+                Stock Quantity
+              </label>
               <input
                 type="number"
                 name="stock"
@@ -286,10 +317,12 @@ const Edit: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">Category</label>
+              <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">
+                Category
+              </label>
               <Select
-                options={categoryOptions}
-                defaultValue={categoryOptions.find((o) => o.value === product.category) || null}
+                options={CATEGORY_SELECT_OPTIONS}
+                value={CATEGORY_SELECT_OPTIONS.find((o) => o.value === newValue.category) || null}
                 onChange={handleCategoryChange}
                 styles={darkSelectStyles}
                 placeholder="Select a category..."
@@ -297,7 +330,9 @@ const Edit: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">Allow Pay on Delivery</label>
+              <label className="block text-sm font-roboto font-medium text-gray-300 mb-1">
+                Allow Pay on Delivery
+              </label>
               <Select
                 options={payOnDeliveryOptions}
                 defaultValue={payOnDeliveryOptions.find((o) => o.value === product.PayOnDelivery)}

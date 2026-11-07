@@ -13,15 +13,19 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarState, setsidebarState] = useState(false);
-  const [page, setPageState] = useState(() =>
-    location.pathname === ROUTES.ADMIN_SEARCH ? "search" : "orders"
-  );
+  const [page, setPageState] = useState(() => {
+    if (location.pathname === ROUTES.ADMIN_SEARCH) return "search";
+    if (location.pathname === ROUTES.ADMIN_UPLOAD_PRODUCTS) return "upload";
+    return "orders";
+  });
 
   useEffect(() => {
     if (location.pathname === ROUTES.ADMIN_SEARCH) {
       setPageState("search");
+    } else if (location.pathname === ROUTES.ADMIN_UPLOAD_PRODUCTS) {
+      setPageState("upload");
     } else if (location.pathname === ROUTES.ADMIN_LANDINGPAGE) {
-      setPageState((prev) => (prev === "search" ? "orders" : prev));
+      setPageState((prev) => (prev === "search" || prev === "upload" ? "orders" : prev));
     }
   }, [location.pathname]);
 
@@ -30,6 +34,8 @@ const Dashboard: React.FC = () => {
       setPageState(key);
       if (key === "search") {
         navigate(ROUTES.ADMIN_SEARCH);
+      } else if (key === "upload") {
+        navigate(ROUTES.ADMIN_UPLOAD_PRODUCTS);
       } else {
         navigate(ROUTES.ADMIN_LANDINGPAGE);
       }

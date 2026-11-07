@@ -4,23 +4,27 @@ import { useLocation } from "react-router-dom";
 import Products from "./Products";
 import DefaultNav from "../../components/DefaultNav";
 import Footer from "../../components/Footer";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { supabase } from "../../DB/supabase";
 import CategoryNav from "../Cart/CategoryNav";
+import { getCategoryDisplayLabel, getCategoryQuerySlugs } from "../../utils/categories";
 
 const Category: React.FC = () => {
   const location = useLocation();
   const category: string = new URLSearchParams(location.search).get("category") ?? "";
   const [Cart, setCart] = useState<any[]>([]);
   const [categoryProducts, setCategoryProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const getProductsByCategory = async () => {
     if (!category) return;
+    setLoading(true);
     try {
+      const slugs = getCategoryQuerySlugs(category);
       const { data, error } = await supabase
         .from("products")
         .select("*")
-        .eq("category", category)
+        .in("category", slugs)
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -32,6 +36,8 @@ const Category: React.FC = () => {
     } catch (error) {
       console.error(error);
       toast.error("Unable to get data");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -105,6 +111,7 @@ const Category: React.FC = () => {
         if (error) throw error;
       }
 
+      toast.success("Added to cart");
       void getCartInfo();
     } catch (error: any) {
       console.error("addToCart failed:", error);
@@ -117,15 +124,17 @@ const Category: React.FC = () => {
   }, [category]);
 
   return (
-    <div className="w-full h-full px-1 pt-16 md:pt-24 bg-purple-100">
+    <div className="w-full min-h-screen px-1 pt-16 md:pt-24 bg-purple-100">
       <DefaultNav Cart={Cart} />
       <CategoryNav />
       <Products
-        category={category}
+        category={getCategoryDisplayLabel(category)}
         categoryProducts={categoryProducts}
         addToCart={addToCart}
+        loading={loading}
       />
       <Footer />
+      <ToastContainer />
     </div>
   );
 };

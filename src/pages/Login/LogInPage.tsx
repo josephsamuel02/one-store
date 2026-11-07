@@ -51,6 +51,10 @@ const Login: React.FC = () => {
       const uid = data.session.user.id;
       localStorage.setItem("one_store_login", uid);
       localStorage.setItem("login_expiry_date", String(Date.now() + 24 * 60 * 60 * 1000));
+      const existingAdmin = localStorage.getItem("one_store_admin");
+      if (existingAdmin && existingAdmin !== uid) {
+        localStorage.removeItem("one_store_admin");
+      }
 
       toast.success("Login successful");
       window.location.replace("/");

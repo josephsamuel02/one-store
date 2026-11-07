@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { MdPersonOutline, MdLogout } from "react-icons/md";
 import ROUTES from "../../utils/Routes";
 import { supabase } from "../../DB/supabase";
+import { verifyAdminSession } from "../../utils/adminAuth";
 import { useNavigate } from "react-router-dom";
 
 type AdminUser = {
@@ -14,19 +15,24 @@ const AdminNav: React.FC = () => {
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("one_store_admin");
-    if (!token) {
-      navigate(ROUTES.ADMIN_LOGIN);
-      return;
-    }
+    let active = true;
 
     const load = async () => {
+      const check = await verifyAdminSession();
+      if (!active) return;
+
+      if (!check.ok || !check.userId) {
+        navigate(ROUTES.ADMIN_LOGIN);
+        return;
+      }
+
       const { data, error } = await supabase
         .from("user")
         .select("surname, name")
-        .eq("id", token)
+        .eq("id", check.userId)
         .maybeSingle();
 
+      if (!active) return;
       if (error || !data) {
         console.error("AdminNav: failed to load user", error);
         return;
@@ -35,11 +41,23 @@ const AdminNav: React.FC = () => {
     };
 
     void load();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") {
+        localStorage.removeItem("one_store_admin");
+        navigate(ROUTES.ADMIN_LOGIN);
+      }
+    });
+
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
   }, [navigate]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     localStorage.removeItem("one_store_admin");
-    void supabase.auth.signOut();
+    await supabase.auth.signOut();
     navigate(ROUTES.ADMIN_LOGIN);
   };
 
@@ -64,7 +82,7 @@ const AdminNav: React.FC = () => {
           </a>
         )}
         <button
-          onClick={handleLogout}
+          onClick={() => void handleLogout()}
           className="p-2 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
           title="Logout"
         >

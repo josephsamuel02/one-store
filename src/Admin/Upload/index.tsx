@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useRef, useState } from "react";
-import { v4 } from "uuid";
 import Select from "react-select";
 import { toast, ToastContainer } from "react-toastify";
 import SuccessCard from "./successCard";
@@ -7,9 +7,14 @@ import ScaleLoader from "react-spinners/ScaleLoader";
 import { useNavigate } from "react-router-dom";
 import ROUTES from "../../utils/Routes";
 import { supabase } from "../../DB/supabase";
+import { CATEGORY_SELECT_OPTIONS } from "../../utils/categories";
+import {
+  isSupportedImageFile,
+  prepareProductImageUpload,
+  verifyAdminSession,
+} from "../../utils/adminAuth";
 import { MdCloudUpload, MdImage } from "react-icons/md";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 const darkSelectStyles = {
   control: (base: any, state: any) => ({
     ...base,
@@ -39,7 +44,6 @@ const darkSelectStyles = {
 };
 
 const AdminUpload: React.FC = () => {
-  const adminToken = localStorage.getItem("one_store_admin");
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showCard, setShowCard] = useState(false);
@@ -47,7 +51,6 @@ const AdminUpload: React.FC = () => {
   const [imagePreview, setImagePreview] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<string>("");
 
   const [product, setProduct] = useState({
     name: "",
@@ -60,34 +63,28 @@ const AdminUpload: React.FC = () => {
     PayOnDelivery: false,
   });
 
-  const categoryOptions = [
-    { value: "computers", label: "Computers" },
-    { value: "accessories", label: "Accessories" },
-    { value: "groceries", label: "Groceries" },
-    { value: "fashion", label: "Fashion" },
-    { value: "electronics", label: "Electronics" },
-    { value: "sports", label: "Sports" },
-    { value: "food", label: "Food" },
-    { value: "baby", label: "Baby" },
-    { value: "cosmetics", label: "Cosmetics" },
-    { value: "wine", label: "Wines and liquor" },
-    { value: "household", label: "Household" },
-    { value: "health", label: "Health" },
-    { value: "gifts", label: "Gift items" },
-    { value: "kitchen", label: "Kitchen utensils" },
-    { value: "yoghurt", label: "Yoghurt" },
-    { value: "snacks", label: "Snacks" },
-    { value: "medicine", label: "Medicine" },
-  ];
-
   const payOnDeliveryOptions = [
     { value: false, label: "No" },
     { value: true, label: "Yes" },
   ];
 
+  useEffect(() => {
+    let active = true;
+    void verifyAdminSession().then((res) => {
+      if (!active) return;
+      if (!res.ok) {
+        toast.error(res.reason || "Please sign in as an admin.");
+        navigate(ROUTES.ADMIN_LOGIN);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [navigate]);
+
   const processFile = (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file.");
+    if (!isSupportedImageFile(file)) {
+      toast.error("Please select a valid image file (JPG, PNG, WEBP, SVG, GIF).");
       return;
     }
     setImagePreview(URL.createObjectURL(file));
@@ -106,39 +103,43 @@ const AdminUpload: React.FC = () => {
     if (file) processFile(file);
   };
 
-  const uploadProduct = async (e: React.MouseEvent) => {
+  const uploadProduct = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!imageFile) {
       toast.error("Please select a product image.");
       return;
     }
-    if (!product.name || !product.price || !product.category) {
-      toast.error("Please fill in name, price and category.");
+    if (!product.name.trim() || !product.price || !product.category) {
+      toast.error("Please fill in product name, price, and category.");
+      return;
+    }
+
+    const parsedPrice = Number(product.price);
+    if (Number.isNaN(parsedPrice) || parsedPrice <= 0) {
+      toast.error("Please enter a valid product price.");
       return;
     }
 
     setLoading(true);
     try {
-      // DEBUG: Log session state at start
-      const { data: sessionData } = await supabase.auth.getSession();
-      const debugSession = {
-        hasSession: !!sessionData.session,
-        uid: sessionData.session?.user?.id?.slice(0,8) + "..." || "null",
-        adminTokenExists: !!adminToken,
-        adminTokenPrefix: adminToken?.slice(0,8) || "null",
-        match: sessionData.session?.user?.id === adminToken
-      };
-      console.log("[DEBUG] Session check:", debugSession);
-      setDebugInfo(JSON.stringify(debugSession, null, 2));
+      const sessionCheck = await verifyAdminSession();
+      if (!sessionCheck.ok || !sessionCheck.userId) {
+        toast.error(sessionCheck.reason || "Admin session expired. Redirecting to login...");
+        setTimeout(() => navigate(ROUTES.ADMIN_LOGIN), 1200);
+        return;
+      }
 
-      const fileName = `${v4()}_${imageFile.name}`;
+      const { fileName, contentType } = prepareProductImageUpload(imageFile);
       const { error: storageError } = await supabase.storage
         .from("products")
-        .upload(fileName, imageFile);
+        .upload(fileName, imageFile, {
+          contentType,
+          upsert: false,
+        });
 
       if (storageError) {
-        console.error(storageError);
+        console.error("Storage upload error:", storageError);
         toast.error("Image upload failed: " + storageError.message);
         return;
       }
@@ -146,49 +147,40 @@ const AdminUpload: React.FC = () => {
       const { data: urlData } = supabase.storage.from("products").getPublicUrl(fileName);
       const imageUrl = urlData.publicUrl;
 
-      // DEBUG: Log insert payload
       const insertPayload = {
         image: imageUrl,
-        name: product.name,
-        productDetails: product.productDetails || null,
+        name: product.name.trim(),
+        productDetails: product.productDetails.trim() || null,
         features: product.features
           ? product.features.split(",").map((f) => f.trim()).filter(Boolean)
           : null,
         old_price: product.old_price ? Number(product.old_price) : null,
-        price: Number(product.price),
-        stock: product.stock ? Number(product.stock) : null,
+        price: parsedPrice,
+        stock: product.stock !== "" ? Number(product.stock) : null,
         category: product.category,
         PayOnDelivery: product.PayOnDelivery,
-        uploaded_by: adminToken,
+        uploaded_by: sessionCheck.userId,
       };
-      console.log("[DEBUG] Insert payload:", insertPayload);
 
       const { error: insertError } = await supabase.from("products").insert(insertPayload);
 
       if (insertError) {
-        const errStr = JSON.stringify(insertError, null, 2);
-        console.error("[DEBUG] Insert error full:", errStr);
-        setDebugInfo(prev => prev + "\n\nINSERT ERROR:\n" + errStr.slice(0, 300));
+        console.error("Product insert error:", insertError);
         toast.error("Product save failed: " + insertError.message);
         return;
       }
 
       setShowCard(true);
     } catch (err) {
-      console.error(err);
-      toast.error("Error: Failed to upload");
+      console.error("Upload unexpected error:", err);
+      toast.error("Error: Failed to upload product.");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (!adminToken) {
-      navigate(ROUTES.ADMIN_LOGIN);
-    }
-  }, [adminToken, navigate]);
-
-  const inputClass = "w-full px-4 py-3 text-sm font-roboto text-gray-200 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all placeholder:text-gray-600";
+  const inputClass =
+    "w-full px-4 py-3 text-sm font-roboto text-gray-200 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all placeholder:text-gray-600";
 
   return (
     <div className="w-full px-4 md:px-8 py-6 max-w-3xl mx-auto">
@@ -197,19 +189,12 @@ const AdminUpload: React.FC = () => {
         <p className="text-sm text-gray-500 font-roboto mt-1">Add a new product to your store</p>
       </div>
 
-      {debugInfo && (
-        <div className="mb-4 p-4 bg-red-900/30 border border-red-700 rounded-lg">
-          <h3 className="text-red-400 text-xs font-bold uppercase mb-2">Debug Info (COPY THIS):</h3>
-          <pre className="text-xs text-red-300 whitespace-pre-wrap overflow-auto max-h-40">{debugInfo}</pre>
-        </div>
-      )}
-
       <div className="bg-gray-900 rounded-2xl border border-gray-800/60 overflow-hidden">
         <div className="p-6 md:p-8 bg-gradient-to-b from-gray-800/50 to-gray-900 border-b border-gray-800/60">
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/jpg, image/jpeg, image/png, image/svg+xml"
+            accept="image/*"
             multiple={false}
             onChange={handleImageSelect}
             className="hidden"
@@ -234,7 +219,10 @@ const AdminUpload: React.FC = () => {
             </div>
           ) : (
             <div
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOver(true);
+              }}
               onDragLeave={() => setDragOver(false)}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
@@ -244,23 +232,25 @@ const AdminUpload: React.FC = () => {
                   : "border-gray-700 hover:border-purple-500/50 hover:bg-gray-800/50"
               }`}
             >
-              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-colors ${
-                dragOver ? "bg-Storepurple text-white" : "bg-gray-800 text-gray-500"
-              }`}>
+              <div
+                className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 transition-colors ${
+                  dragOver ? "bg-Storepurple text-white" : "bg-gray-800 text-gray-500"
+                }`}
+              >
                 <MdImage size={32} />
               </div>
               <p className="text-sm font-roboto font-medium text-gray-300">
                 Drop your image here, or <span className="text-purple-400">browse</span>
               </p>
               <p className="text-xs font-roboto text-gray-600 mt-1">
-                JPG, PNG or SVG
+                JPG, PNG, WEBP, GIF or SVG
               </p>
             </div>
           )}
         </div>
 
         <div className="p-6 md:p-8">
-          <form className="space-y-5">
+          <form onSubmit={uploadProduct} className="space-y-5">
             <div className="space-y-4">
               <h3 className="text-xs font-roboto font-bold text-gray-500 uppercase tracking-widest">
                 Product Information
@@ -282,10 +272,9 @@ const AdminUpload: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-roboto font-medium text-gray-300 mb-1.5">
-                  Product Details <span className="text-red-400">*</span>
+                  Product Details
                 </label>
                 <textarea
-                  required
                   value={product.productDetails}
                   onChange={(e) => setProduct((p) => ({ ...p, productDetails: e.target.value }))}
                   placeholder="Describe the product in detail..."
@@ -305,7 +294,9 @@ const AdminUpload: React.FC = () => {
                   rows={2}
                   className={`${inputClass} resize-none`}
                 />
-                <p className="mt-1 text-xs font-roboto text-gray-600">Separate features with commas</p>
+                <p className="mt-1 text-xs font-roboto text-gray-600">
+                  Separate features with commas
+                </p>
               </div>
 
               <div>
@@ -313,7 +304,8 @@ const AdminUpload: React.FC = () => {
                   Category <span className="text-red-400">*</span>
                 </label>
                 <Select
-                  options={categoryOptions}
+                  options={CATEGORY_SELECT_OPTIONS}
+                  value={CATEGORY_SELECT_OPTIONS.find((o) => o.value === product.category) ?? null}
                   onChange={(e) => setProduct((p) => ({ ...p, category: e?.value ?? "" }))}
                   styles={darkSelectStyles}
                   placeholder="Select a category..."
@@ -334,9 +326,13 @@ const AdminUpload: React.FC = () => {
                     Price &#8358; <span className="text-red-400">*</span>
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 font-roboto">&#8358;</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 font-roboto">
+                      &#8358;
+                    </span>
                     <input
                       type="number"
+                      min="0"
+                      step="any"
                       required
                       value={product.price}
                       onChange={(e) => setProduct((p) => ({ ...p, price: e.target.value }))}
@@ -350,9 +346,13 @@ const AdminUpload: React.FC = () => {
                     Old Price &#8358;
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 font-roboto">&#8358;</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 font-roboto">
+                      &#8358;
+                    </span>
                     <input
                       type="number"
+                      min="0"
+                      step="any"
                       value={product.old_price}
                       onChange={(e) => setProduct((p) => ({ ...p, old_price: e.target.value }))}
                       placeholder="0"
@@ -362,11 +362,11 @@ const AdminUpload: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-roboto font-medium text-gray-300 mb-1.5">
-                    Stock Qty <span className="text-red-400">*</span>
+                    Stock Qty
                   </label>
                   <input
                     type="number"
-                    required
+                    min="0"
                     value={product.stock}
                     onChange={(e) => setProduct((p) => ({ ...p, stock: e.target.value }))}
                     placeholder="0"
@@ -397,9 +397,8 @@ const AdminUpload: React.FC = () => {
 
             <div className="pt-4">
               <button
-                type="button"
+                type="submit"
                 disabled={loading}
-                onClick={uploadProduct}
                 className="w-full flex items-center justify-center gap-2 py-3.5 text-base font-roboto font-bold text-white rounded-xl bg-Storepurple hover:bg-StorepurpleDark active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shadow-purple-600/20 hover:shadow-md hover:shadow-purple-600/30"
               >
                 {loading ? (

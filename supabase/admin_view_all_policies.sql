@@ -65,6 +65,54 @@ create policy "Admins can view all users"
   using (public.is_admin());
 
 -- ============================================================================
+-- 4. ORDER DELIVERY COLUMNS (optional, app also falls back to JSONB metadata)
+-- ============================================================================
+alter table "order"
+  add column if not exists delivery_address text,
+  add column if not exists whatsapp_number text,
+  add column if not exists alternative_phone text;
+
+-- ============================================================================
+-- 5. PRODUCTS & STORAGE: ensure admins can insert/update/delete products & images
+-- ============================================================================
+alter table "products" enable row level security;
+
+drop policy if exists "Anyone can view products" on "products";
+create policy "Anyone can view products"
+  on "products"
+  for select
+  using (true);
+
+drop policy if exists "Admins can insert products" on "products";
+create policy "Admins can insert products"
+  on "products"
+  for insert
+  to authenticated
+  with check (public.is_admin());
+
+drop policy if exists "Admins can update products" on "products";
+create policy "Admins can update products"
+  on "products"
+  for update
+  to authenticated
+  using (public.is_admin())
+  with check (public.is_admin());
+
+drop policy if exists "Admins can delete products" on "products";
+create policy "Admins can delete products"
+  on "products"
+  for delete
+  to authenticated
+  using (public.is_admin());
+
+drop policy if exists "Admins can upload product images" on storage.objects;
+create policy "Admins can upload product images"
+  on storage.objects
+  for insert
+  to authenticated
+  with check (bucket_id = 'products' and public.is_admin());
+
+-- ============================================================================
 -- NOTE: Make sure your existing "own data" policies are still in place so that
 -- regular shoppers can read/insert their OWN orders and their OWN user row,
 -- e.g. a policy with USING (user_id = auth.uid()) on "order" for select, and

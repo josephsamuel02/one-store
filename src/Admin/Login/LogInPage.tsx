@@ -12,10 +12,21 @@ const AdminLogin: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    let active = true;
     const adminToken = localStorage.getItem("one_store_admin");
     if (adminToken) {
-      navigate("/admin");
+      void supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!active) return;
+        if (session?.user?.id === adminToken) {
+          navigate("/admin");
+        } else {
+          localStorage.removeItem("one_store_admin");
+        }
+      });
     }
+    return () => {
+      active = false;
+    };
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {

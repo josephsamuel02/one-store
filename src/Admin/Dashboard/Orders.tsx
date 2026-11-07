@@ -5,6 +5,14 @@ import OrdersMenu from "../components/OrdersMenu";
 import { supabase } from "../../DB/supabase";
 import { useNavigate } from "react-router-dom";
 
+function formatWhatsAppPhone(raw: string | null | undefined): string {
+  const digits = String(raw ?? "").replace(/\D/g, "");
+  if (digits.length === 11 && digits.startsWith("0")) {
+    return `234${digits.slice(1)}`;
+  }
+  return digits;
+}
+
 function OrderCard({
   order,
   priceFormat,
@@ -16,6 +24,11 @@ function OrderCard({
 }) {
   const products: any[] = order.products ?? [];
   const firstImage = products.length > 0 ? products[0].image : "/img/shopping-cart.png";
+  const deliveryMeta = products[0]?.deliveryInfo ?? {};
+  const whatsappRaw =
+    order.whatsapp_number ?? order.whatsappNumber ?? deliveryMeta.whatsappNumber ?? order.phone;
+  const deliveryAddress =
+    order.delivery_address ?? order.deliveryAddress ?? order.address ?? deliveryMeta.deliveryAddress;
 
   return (
     <div
@@ -42,6 +55,11 @@ function OrderCard({
         </p>
         <p className="text-xs text-gray-500 font-roboto truncate">{order.email}</p>
         <p className="text-xs text-gray-500 font-roboto">{order.phone}</p>
+        {deliveryAddress && (
+          <p className="text-xs text-gray-400 font-roboto truncate mt-1" title={deliveryAddress}>
+            {deliveryAddress}
+          </p>
+        )}
 
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-800/60">
           <span className="text-[10px] text-gray-600 font-roboto">
@@ -76,7 +94,7 @@ function OrderCard({
               </svg>
             </a>
             <a
-              href={`https://wa.me/${order.phone}`}
+              href={`https://wa.me/${formatWhatsAppPhone(whatsappRaw)}`}
               onClick={(e) => e.stopPropagation()}
               target="_blank"
               rel="noreferrer"

@@ -7,6 +7,7 @@ import Footer from "../../components/Footer";
 import Electronics from "./Electronics";
 import Accessories from "./Accessories";
 import Baby from "./Baby";
+import Household from "./Household";
 import { supabase } from "../../DB/supabase";
 import DefaultNav from "../../components/DefaultNav";
 
@@ -128,6 +129,7 @@ const Index: React.FC = () => {
       </div>
       <Categories />
       <TopeSale Products={allProducts} addToCart={addToCart} />
+      <Household Products={allProducts} addToCart={addToCart} />
       <Accessories Products={allProducts} addToCart={addToCart} />
       <Baby Products={allProducts} addToCart={addToCart} />
       <Electronics Products={allProducts} addToCart={addToCart} />

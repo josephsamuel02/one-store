@@ -5,6 +5,7 @@ import { supabase } from "../../DB/supabase";
 import ROUTES from "../../utils/Routes";
 import DefaultNav from "../components/AdminNav";
 import { toast, ToastContainer } from "react-toastify";
+import { getDaysUntilOrderDeletion } from "../../utils/orderCleanup";
 
 const ORDER_STATUSES: Record<number, { label: string; color: string }> = {
   0: { label: "Pending", color: "bg-yellow-500" },
@@ -46,10 +47,43 @@ const AdminOrderDetails: React.FC = () => {
     setAdvancing(true);
     try {
       const newLevel = order.orderLevel + 1;
-      const { error } = await supabase
+      const completedIso = newLevel === 3 ? new Date().toISOString() : null;
+
+      let updatedProducts = order.products;
+      if (newLevel === 3 && Array.isArray(order.products) && order.products.length > 0) {
+        updatedProducts = order.products.map((item: any, idx: number) =>
+          idx === 0
+            ? {
+                ...item,
+                deliveryInfo: {
+                  ...(item.deliveryInfo ?? {}),
+                  completedAt: completedIso,
+                },
+              }
+            : item
+        );
+      }
+
+      const baseUpdate: Record<string, any> = {
+        orderLevel: newLevel,
+        ...(newLevel === 3 && Array.isArray(updatedProducts) ? { products: updatedProducts } : {}),
+      };
+
+      let { error } = await supabase
         .from("order")
-        .update({ orderLevel: newLevel })
+        .update(newLevel === 3 ? { ...baseUpdate, completed_at: completedIso } : baseUpdate)
         .eq("id", order.id);
+
+      if (
+        error &&
+        newLevel === 3 &&
+        (error.code === "PGRST204" ||
+          error.code === "42703" ||
+          String(error.message).toLowerCase().includes("completed_at"))
+      ) {
+        const retry = await supabase.from("order").update(baseUpdate).eq("id", order.id);
+        error = retry.error;
+      }
 
       if (error) {
         toast.error("Failed to update order status");
@@ -57,7 +91,11 @@ const AdminOrderDetails: React.FC = () => {
         return;
       }
       toast.success(`Order marked as ${ORDER_STATUSES[newLevel]?.label}`);
-      setOrder({ ...order, orderLevel: newLevel });
+      setOrder({
+        ...order,
+        orderLevel: newLevel,
+        ...(newLevel === 3 ? { completed_at: completedIso, products: updatedProducts } : {}),
+      });
     } catch (error) {
       toast.error("Failed to update order status");
       console.error(error);
@@ -94,6 +132,7 @@ const AdminOrderDetails: React.FC = () => {
   const alternativePhone =
     order.alternative_phone ?? order.alternativePhone ?? deliveryMeta.alternativePhone ?? null;
   const status = ORDER_STATUSES[order.orderLevel] ?? ORDER_STATUSES[0];
+  const daysRemaining = order.orderLevel === 3 ? getDaysUntilOrderDeletion(order) : null;
   const orderDate = order.created_at
     ? new Date(order.created_at).toLocaleDateString("en-US", {
         weekday: "short",
@@ -137,6 +176,11 @@ const AdminOrderDetails: React.FC = () => {
               >
                 {advancing ? "Updating..." : `Mark as ${ORDER_STATUSES[order.orderLevel + 1]?.label}`}
               </button>
+            )}
+            {order.orderLevel === 3 && daysRemaining !== null && (
+              <span className="px-3 py-1 text-xs font-roboto text-gray-400 bg-gray-800 border border-gray-700 rounded-full">
+                Auto-deletes in {daysRemaining} day{daysRemaining === 1 ? "" : "s"}
+              </span>
             )}
             <span className="ml-auto text-xs text-gray-500 font-roboto">{orderDate}</span>
           </div>

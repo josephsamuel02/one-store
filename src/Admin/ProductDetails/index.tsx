@@ -4,8 +4,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import ROUTES from "../../utils/Routes";
 import { supabase } from "../../DB/supabase";
 import DefaultNav from "../components/AdminNav";
-import { MdDeleteOutline } from "react-icons/md";
+import { MdContentCopy, MdDeleteOutline, MdShare } from "react-icons/md";
 import { toast, ToastContainer } from "react-toastify";
+import { copyProductLink, shareProduct } from "../../utils/shareProduct";
 
 const AdminProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -150,12 +151,30 @@ const AdminProductDetails: React.FC = () => {
               </div>
             )}
 
-            <a
-              href={`${ROUTES.ADMIN_EDIT_PRODUCT}/${id}`}
-              className="mt-4 w-full md:w-auto text-center px-8 py-3 text-base font-roboto font-bold text-white rounded-lg bg-Storepurple hover:bg-StorepurpleDark transition-colors"
-            >
-              Edit Product
-            </a>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <a
+                href={`${ROUTES.ADMIN_EDIT_PRODUCT}/${id}`}
+                className="w-full sm:w-auto text-center px-8 py-3 text-base font-roboto font-bold text-white rounded-lg bg-Storepurple hover:bg-StorepurpleDark transition-colors"
+              >
+                Edit Product
+              </a>
+              <button
+                type="button"
+                onClick={() => void shareProduct(product)}
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 text-sm font-roboto font-bold text-purple-300 bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 rounded-lg transition-colors"
+              >
+                <MdShare size={18} />
+                Share Link
+              </button>
+              <button
+                type="button"
+                onClick={() => void copyProductLink(product)}
+                className="inline-flex items-center justify-center gap-2 px-4 py-3 text-sm font-roboto font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg transition-colors"
+              >
+                <MdContentCopy size={16} />
+                Copy Link
+              </button>
+            </div>
           </div>
         </div>
       </div>

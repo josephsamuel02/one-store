@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
-import { MdAddShoppingCart } from "react-icons/md";
+import { MdAddShoppingCart, MdContentCopy, MdShare } from "react-icons/md";
 import { toast, ToastContainer } from "react-toastify";
 import { supabase } from "../../DB/supabase";
+import { copyProductLink, shareProduct } from "../../utils/shareProduct";
 
 interface AppComponent {
   singleProduct: any;
@@ -88,15 +89,32 @@ const ProductCard: React.FC<AppComponent> = ({ singleProduct, getCartInfo }) => 
             </h2>
             <h2 className="text-4xl py-3 text-gray-800 font-dayone break-words">
               ₦{priceFormat.format(singleProduct.price)}
-              {singleProduct.old_price != 0 && (
-                <span className="pl-2 text-slate-600 text-xl text-decoration-line: line-through font-normal">
-                  ₦
-                  {priceFormat.format(
-                    singleProduct.old_price != singleProduct.price && singleProduct.old_price
-                  )}
-                </span>
-              )}
+              {Boolean(singleProduct.old_price) &&
+                Number(singleProduct.old_price) !== Number(singleProduct.price) && (
+                  <span className="pl-2 text-slate-600 text-xl line-through font-normal">
+                    ₦{priceFormat.format(Number(singleProduct.old_price))}
+                  </span>
+                )}
             </h2>
+
+            <div className="flex flex-wrap items-center gap-2.5 py-2">
+              <button
+                type="button"
+                onClick={() => void shareProduct(singleProduct)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs md:text-sm font-roboto font-medium text-Storepurple bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-full transition-colors"
+              >
+                <MdShare size={16} />
+                <span>Share Product</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => void copyProductLink(singleProduct)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs md:text-sm font-roboto font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+              >
+                <MdContentCopy size={15} />
+                <span>Copy Link</span>
+              </button>
+            </div>
 
             {User && showBTN && (
               <div className="w-full h-auto flex flex-row py-6">

@@ -6,6 +6,7 @@ import ProductDetails from "./ProductDetails";
 import Footer from "../../components/Footer";
 import { useParams } from "react-router-dom";
 import { supabase } from "../../DB/supabase";
+import { updateDocumentProductMeta } from "../../utils/shareProduct";
 
 const Product: React.FC = () => {
   const { id } = useParams();
@@ -49,6 +50,9 @@ const Product: React.FC = () => {
         return;
       }
       setSingleProduct(data);
+      if (data) {
+        updateDocumentProductMeta(data);
+      }
     } catch (error) {
       console.error("Error getting product:", error);
     }

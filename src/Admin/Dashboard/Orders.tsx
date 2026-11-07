@@ -4,6 +4,10 @@ import ROUTES from "../../utils/Routes";
 import OrdersMenu from "../components/OrdersMenu";
 import { supabase } from "../../DB/supabase";
 import { useNavigate } from "react-router-dom";
+import {
+  getDaysUntilOrderDeletion,
+  purgeExpiredCompletedOrders,
+} from "../../utils/orderCleanup";
 
 function formatWhatsAppPhone(raw: string | null | undefined): string {
   const digits = String(raw ?? "").replace(/\D/g, "");
@@ -29,6 +33,7 @@ function OrderCard({
     order.whatsapp_number ?? order.whatsappNumber ?? deliveryMeta.whatsappNumber ?? order.phone;
   const deliveryAddress =
     order.delivery_address ?? order.deliveryAddress ?? order.address ?? deliveryMeta.deliveryAddress;
+  const daysLeft = order.orderLevel === 3 ? getDaysUntilOrderDeletion(order) : null;
 
   return (
     <div
@@ -49,6 +54,12 @@ function OrderCard({
             {products.length} item{products.length !== 1 ? "s" : ""}
           </span>
         </div>
+
+        {daysLeft !== null && (
+          <p className="text-[11px] font-roboto text-amber-400/90 mb-1.5">
+            Auto-deletes in {daysLeft} day{daysLeft === 1 ? "" : "s"}
+          </p>
+        )}
 
         <p className="text-sm font-roboto font-bold text-gray-200 truncate">
           {order.surname} {order.name}
@@ -147,7 +158,8 @@ const Orders: React.FC = () => {
         console.error("Failed to fetch orders:", error);
         return;
       }
-      setOrders(data ?? []);
+      const cleaned = await purgeExpiredCompletedOrders(data ?? []);
+      setOrders(cleaned);
     } catch (error) {
       console.error("Failed to fetch orders:", error);
     } finally {

@@ -8,6 +8,7 @@ import { supabase } from "../../DB/supabase";
 import { MdCall, MdWhatsapp } from "react-icons/md";
 import ROUTES from "../../utils/Routes";
 import PartnerCard from "../../components/PartnerCard";
+import { purgeExpiredCompletedOrders } from "../../utils/orderCleanup";
 
 const Orders: React.FC = () => {
   const token = localStorage.getItem("one_store_login");
@@ -28,7 +29,8 @@ const Orders: React.FC = () => {
         console.error("Unable to get orders", error);
         return;
       }
-      setOrders(data ?? []);
+      const cleaned = await purgeExpiredCompletedOrders(data ?? []);
+      setOrders(cleaned);
     } catch (error) {
       console.error("Unable to get orders", error);
     }

@@ -92,9 +92,14 @@ const CartItems: React.FC<AppComponent> = ({ cartItems, cartRowId, totalPrice, g
   return (
     <>
       {!checkout ? (
-        <div className="w-full md:w-11/12 xl:w-10/12 mx-auto my-4 flex flex-col md:flex-row gap-4 lg:gap-6 items-start">
-          <div className="flex-1 w-full bg-white md:p-6 p-2 md:rounded-xl flex flex-col shadow-sm">
-            <h3 className="text-2xl md:text-3xl p-4 text-black font-bold font-dayone">Cart</h3>
+        <div className="max-w-7xl mx-auto my-4 flex flex-col md:flex-row gap-5 lg:gap-6 items-start">
+          <div className="flex-1 w-full bg-white md:p-6 p-4 rounded-2xl border border-gray-100 flex flex-col shadow-sm">
+            <div className="flex items-center justify-between px-1 pb-4 mb-2 border-b border-gray-100">
+              <h3 className="text-2xl md:text-3xl text-gray-900 font-dayone">Shopping Cart</h3>
+              <span className="px-3 py-1 text-xs font-roboto font-semibold text-Storepurple bg-purple-50 rounded-full">
+                {cartItems.length} item{cartItems.length === 1 ? "" : "s"}
+              </span>
+            </div>
 
             {cartItems.length > 0 ? (
               cartItems.map((i: any, index: number) => {
@@ -175,9 +180,25 @@ const CartItems: React.FC<AppComponent> = ({ cartItems, cartRowId, totalPrice, g
                 );
               })
             ) : (
-              <h3 className="text-2xl md:text-3xl p-4 text-black font-bold font-dayone">
-                No products in your cart
-              </h3>
+              <div className="py-12 px-4 text-center flex flex-col items-center">
+                <img
+                  src="/img/shopping-cart.png"
+                  alt="Empty cart"
+                  className="w-20 h-20 opacity-40 mb-4"
+                />
+                <h3 className="text-xl md:text-2xl text-gray-800 font-dayone mb-1">
+                  Your cart is empty
+                </h3>
+                <p className="text-xs md:text-sm font-roboto text-gray-500 mb-6 max-w-sm">
+                  Looks like you haven&apos;t added anything to your cart yet.
+                </p>
+                <a
+                  href={ROUTES.LANDINGPAGE}
+                  className="px-6 py-2.5 bg-Storepurple hover:bg-StorepurpleDark text-white text-sm font-roboto font-medium rounded-full transition-colors"
+                >
+                  Start Shopping
+                </a>
+              </div>
             )}
 
             <div className="mx-auto my-4 w-full rounded-2xl overflow-hidden border border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50">
@@ -233,20 +254,20 @@ const CartItems: React.FC<AppComponent> = ({ cartItems, cartRowId, totalPrice, g
             </div>
 
             {totalPrice > 0 && (
-              <div className="w-full h-auto my-6 flex flex-col bg-white gap-3">
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex items-baseline gap-3 py-1">
-                    <h3 className="text-lg text-black px-3 font-roboto font-bold">Total:</h3>
-                    <h3 className="text-xl text-black font-dayone">
-                      ₦{priceFormat.format(totalPrice)}
-                    </h3>
-                  </div>
+              <div className="w-full mt-4 pt-4 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <p className="text-xs font-roboto uppercase tracking-wider text-gray-500">
+                    Cart Subtotal
+                  </p>
+                  <p className="text-2xl font-dayone text-gray-900">
+                    ₦{priceFormat.format(totalPrice)}
+                  </p>
                 </div>
                 <button
-                  className="w-2/5 h-auto py-3 text-lg text-center text-white font-bold cursor-pointer rounded bg-Storepurple hover:bg-StorepurpleDark"
+                  className="w-full sm:w-auto px-8 py-3.5 text-base font-roboto font-bold text-white cursor-pointer rounded-xl bg-Storepurple hover:bg-StorepurpleDark shadow-md shadow-purple-600/20 transition-all active:scale-[0.98]"
                   onClick={() => setCheckOut(true)}
                 >
-                  Checkout
+                  Proceed to Checkout &rarr;
                 </button>
               </div>
             )}

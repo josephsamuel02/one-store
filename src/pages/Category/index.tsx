@@ -124,15 +124,17 @@ const Category: React.FC = () => {
   }, [category]);
 
   return (
-    <div className="w-full min-h-screen px-1 pt-16 md:pt-24 bg-purple-100">
+    <div className="w-full min-h-screen pt-16 md:pt-[70px] bg-gray-50 flex flex-col">
       <DefaultNav Cart={Cart} />
       <CategoryNav />
-      <Products
-        category={getCategoryDisplayLabel(category)}
-        categoryProducts={categoryProducts}
-        addToCart={addToCart}
-        loading={loading}
-      />
+      <main className="flex-1">
+        <Products
+          category={getCategoryDisplayLabel(category)}
+          categoryProducts={categoryProducts}
+          addToCart={addToCart}
+          loading={loading}
+        />
+      </main>
       <Footer />
       <ToastContainer />
     </div>

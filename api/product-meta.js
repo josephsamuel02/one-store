@@ -45,21 +45,13 @@ async function getBaseIndexHtml(origin) {
 }
 
 function buildProductMetaBlock({ product, productUrl, origin }) {
-  const priceNum = Number(product.price) || 0;
-  const oldPriceNum = Number(product.old_price) || 0;
-  const priceFormat = new Intl.NumberFormat("en-US");
-  const formattedPrice = `₦${priceFormat.format(priceNum)}`;
-
   const cleanName = String(product.name ?? "Product").replace(/\s+/g, " ").trim();
-  const title = `${cleanName} — ${formattedPrice} | OneStore`;
+  const title = `${cleanName} | OneStore`;
 
-  const parts = [`Price: ${formattedPrice}`];
-  if (oldPriceNum > priceNum) {
-    parts.push(`(Was ₦${priceFormat.format(oldPriceNum)})`);
-  }
+  const parts = [];
   if (product.category) {
     const cat = String(product.category).replace(/_/g, " ");
-    parts.push(`• ${cat.charAt(0).toUpperCase() + cat.slice(1)}`);
+    parts.push(cat.charAt(0).toUpperCase() + cat.slice(1));
   }
 
   const detailsText = String(product.productDetails ?? "")
@@ -69,11 +61,12 @@ function buildProductMetaBlock({ product, productUrl, origin }) {
     ? product.features.filter(Boolean).join(", ")
     : "";
 
-  const bodySnippet = detailsText || featuresText || "Shop quality products at great prices on OneStore.";
-  const rawDescription = `${parts.join(" ")} — ${bodySnippet}`.slice(0, 240);
+  const bodySnippet = detailsText || featuresText || "Shop quality products on OneStore.";
+  const rawDescription = (
+    parts.length > 0 ? `${parts.join(" ")} — ${bodySnippet}` : bodySnippet
+  ).slice(0, 240);
 
   const imageUrl = normalizeImageUrl(product.image, origin);
-  const inStock = product.stock == null || Number(product.stock) > 0;
 
   const jsonLd = JSON.stringify({
     "@context": "https://schema.org",
@@ -81,15 +74,6 @@ function buildProductMetaBlock({ product, productUrl, origin }) {
     name: cleanName,
     image: [imageUrl],
     description: rawDescription,
-    offers: {
-      "@type": "Offer",
-      url: productUrl,
-      priceCurrency: "NGN",
-      price: String(priceNum),
-      availability: inStock
-        ? "https://schema.org/InStock"
-        : "https://schema.org/OutOfStock",
-    },
   }).replace(/</g, "\\u003c");
 
   return `<!-- OG_META_START -->
@@ -106,8 +90,6 @@ function buildProductMetaBlock({ product, productUrl, origin }) {
     <meta property="og:image" content="${escapeHtml(imageUrl)}" />
     <meta property="og:image:secure_url" content="${escapeHtml(imageUrl)}" />
     <meta property="og:image:alt" content="${escapeHtml(cleanName)}" />
-    <meta property="product:price:amount" content="${escapeHtml(priceNum)}" />
-    <meta property="product:price:currency" content="NGN" />
 
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -152,7 +134,7 @@ export default async function handler(req, res) {
     try {
       const endpoint = `${supabaseUrl.replace(/\/$/, "")}/rest/v1/products?id=eq.${encodeURIComponent(
         productId
-      )}&select=id,name,price,old_price,image,productDetails,features,category,stock&limit=1`;
+      )}&select=id,name,image,productDetails,features,category&limit=1`;
 
       const supaRes = await fetch(endpoint, {
         headers: {

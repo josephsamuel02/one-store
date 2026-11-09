@@ -18,15 +18,15 @@ export function getShareableProductUrl(productId: string | number): string {
 export function updateDocumentProductMeta(product: any) {
   if (!product) return;
 
-  const priceNum = Number(product.price) || 0;
-  const formattedPrice = `₦${new Intl.NumberFormat("en-US").format(priceNum)}`;
   const cleanName = String(product.name ?? "Product").trim();
-  const title = `${cleanName} — ${formattedPrice} | OneStore`;
-  const description =
-    `${formattedPrice} — ${String(product.productDetails ?? "Shop on OneStore").trim()}`.slice(
-      0,
-      220
-    );
+  const title = `${cleanName} | OneStore`;
+  const description = String(
+    product.productDetails ||
+      (Array.isArray(product.features) ? product.features.filter(Boolean).join(", ") : "") ||
+      "Shop quality products on OneStore."
+  )
+    .trim()
+    .slice(0, 220);
   const url = getShareableProductUrl(product.id);
   const imageUrl = product.image
     ? new URL(String(product.image), window.location.origin).href
@@ -67,9 +67,7 @@ export async function copyProductLink(product: any): Promise<void> {
 export async function shareProduct(product: any): Promise<void> {
   if (!product?.id) return;
   const url = getShareableProductUrl(product.id);
-  const priceNum = Number(product.price) || 0;
-  const formattedPrice = `₦${new Intl.NumberFormat("en-US").format(priceNum)}`;
-  const title = `${String(product.name ?? "Product").trim()} — ${formattedPrice}`;
+  const title = `${String(product.name ?? "Product").trim()} | OneStore`;
 
   if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
     try {

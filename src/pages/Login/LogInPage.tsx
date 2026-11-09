@@ -66,77 +66,109 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full pt-16 md:pt-24 bg-purple-100">
+    <div className="w-full min-h-screen flex flex-col pt-16 md:pt-24 bg-gray-50">
       <DefaultNav Cart={[]} />
-      <div className="w-full h-auto md:pb-12 mt-10 flex flex-col md:flex-row items-center">
-        <div className="mx-auto py-2 h-auto w-auto md:w-1/2">
+      <div className="flex-1 max-w-6xl w-full mx-auto px-4 py-8 md:py-14 flex flex-col lg:flex-row items-center justify-between gap-10">
+        <div className="w-full max-w-md mx-auto">
           <form
             onSubmit={handleLogin}
-            className="mx-auto p-10 md:w-96 flex flex-col bg-white rounded-md items-center"
+            className="w-full p-6 md:p-8 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100"
           >
-            <div className="w-full flex h-auto">
-              <p className="text-3xl mx-1 font-bold text-slate-800 text-left">Login</p>
-            </div>
-            <input
-              required
-              type="email"
-              placeholder="Email"
-              value={email}
-              className="w-full my-3 h-auto py-2 px-4 text-lg text-slate-800 rounded-md outline-none border-2 border-blue-600 focus:border-purple-700"
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <div className="w-full my-3 h-auto py-2 text-lg text-slate-800 flex flex-row items-center rounded-md outline-none border-2 border-blue-600 focus:border-purple-700">
-              <input
-                required
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={password}
-                className="w-full h-auto px-4 text-lg text-slate-800 outline-none"
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <button
-                type="button"
-                className="text-[#2319ac] mx-3 p-0 border-0 bg-transparent cursor-pointer"
-                onClick={() => setShowPassword((v) => !v)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? <GoEye size={20} /> : <GoEyeClosed size={20} />}
-              </button>
+            <div className="mb-6">
+              <span className="inline-block text-xs font-semibold uppercase tracking-wider text-Storepurple bg-purple-50 px-3 py-1 rounded-full mb-2">
+                Welcome Back
+              </span>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 font-dayone">
+                Sign in to OneStore
+              </h1>
+              <p className="text-sm text-gray-500 mt-1">
+                Access your cart, saved details, and order updates.
+              </p>
             </div>
 
-            <div className="mr-auto w-auto h-auto flex flex-row items-center">
+            <div className="mb-4">
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-1.5">
+                Email Address
+              </label>
+              <input
+                required
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                className="w-full py-2.5 px-4 text-sm text-gray-900 rounded-xl outline-none border border-gray-200 bg-gray-50/50 focus:bg-white focus:border-Storepurple focus:ring-2 focus:ring-purple-100 transition-all"
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide">
+                  Password
+                </label>
+                <a
+                  href={ROUTES.FORGOTPASSWORD}
+                  className="text-xs font-semibold text-Storepurple hover:underline"
+                >
+                  Forgot password?
+                </a>
+              </div>
+              <div className="w-full flex flex-row items-center rounded-xl border border-gray-200 bg-gray-50/50 focus-within:bg-white focus-within:border-Storepurple focus-within:ring-2 focus-within:ring-purple-100 transition-all">
+                <input
+                  required
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={password}
+                  className="w-full py-2.5 px-4 text-sm text-gray-900 bg-transparent outline-none"
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="text-gray-500 hover:text-Storepurple px-3 py-2 border-0 bg-transparent cursor-pointer"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <GoEye size={18} /> : <GoEyeClosed size={18} />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 mb-6">
               <input
                 type="checkbox"
                 name="remember me"
                 id="remember"
-                className="my-3 h-auto"
+                className="w-4 h-4 accent-Storepurple rounded"
               />
-              <label htmlFor="remember" className="px-1 text-base text-slate-900">
-                Remember me
+              <label htmlFor="remember" className="text-sm text-gray-600 cursor-pointer">
+                Keep me signed in for 24 hours
               </label>
             </div>
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full mx-auto px-6 py-2 my-4 text-center text-white text-xl font-nunito rounded-full bg-Storepurple hover:bg-StorepurpleDark transition-colors shadow-md disabled:opacity-50"
+              className="w-full px-6 py-3 text-center text-white text-sm font-bold rounded-xl bg-Storepurple hover:bg-StorepurpleDark transition-colors shadow-sm disabled:opacity-50"
             >
-              {loading ? "Signing in..." : "Login"}
+              {loading ? "Signing in..." : "Sign In"}
             </button>
 
-            <p className="mx-auto my-3 text-base text-thin text-slate-700">
-              Don&apos;t have an account?
-              <a href={ROUTES.SIGNUP} className="mx-1 text-base text-blue-800">
-                Sign Up
+            <p className="text-center mt-6 text-sm text-gray-600">
+              Don&apos;t have an account?{" "}
+              <a
+                href={ROUTES.SIGNUP}
+                className="font-semibold text-Storepurple hover:underline"
+              >
+                Create an account
               </a>
             </p>
           </form>
         </div>
 
-        <div className="m-auto pb-28 mx-auto h-auto w-1/2 items-center">
+        <div className="hidden lg:flex w-1/2 items-center justify-center">
           <img
-            src="img/undraw_login_re_4vu2.svg"
-            alt=""
-            className="m-auto mx-auto md:mx-1 w-full md:w-9/12"
+            src="/img/undraw_login_re_4vu2.svg"
+            alt="Login illustration"
+            className="w-full max-w-md drop-shadow-sm"
           />
         </div>
       </div>

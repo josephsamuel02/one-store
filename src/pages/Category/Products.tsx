@@ -2,6 +2,7 @@
 import React from "react";
 import ROUTES from "../../utils/Routes";
 import { MdShoppingCart } from "react-icons/md";
+import StoreProductCard from "../../components/StoreProductCard";
 
 interface AppComponent {
   category: string;
@@ -16,85 +17,60 @@ const Products: React.FC<AppComponent> = ({
   addToCart,
   loading = false,
 }) => {
-  const User = localStorage.getItem("one_store_login");
-  const priceFormat = new Intl.NumberFormat("en-US");
+  const count = Array.isArray(categoryProducts) ? categoryProducts.length : 0;
 
   return (
-    <div className="w-full min-h-[50vh] md:p-1 bg-white">
-      <h1 className="p-4 text-xl md:text-2xl text-gray-800 font-dayone capitalize">{category}</h1>
+    <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10 min-h-[60vh]">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6 md:mb-8">
+        <div className="flex items-center gap-3">
+          <div className="w-1.5 h-8 bg-Storepurple rounded-full" />
+          <div>
+            <h1 className="text-2xl md:text-3xl text-gray-900 font-dayone capitalize">
+              {category || "Category"}
+            </h1>
+            {!loading && (
+              <p className="text-xs md:text-sm text-gray-500 font-roboto mt-0.5">
+                {count} product{count === 1 ? "" : "s"} available
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
 
       {loading && (
-        <div className="flex items-center justify-center py-20 bg-purple-100">
-          <div className="w-10 h-10 border-4 border-purple-200 border-t-Storepurple rounded-full animate-spin" />
+        <div className="flex items-center justify-center py-24">
+          <div className="w-10 h-10 border-4 border-gray-200 border-t-Storepurple rounded-full animate-spin" />
         </div>
       )}
 
-      {!loading && (!categoryProducts || categoryProducts.length === 0) && (
-        <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-purple-50/50">
-          <MdShoppingCart size={56} className="text-gray-300 mb-3" />
-          <p className="text-base md:text-lg font-dayone text-gray-700 mb-1">
+      {!loading && count === 0 && (
+        <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-2xl border border-gray-100 shadow-sm">
+          <div className="w-16 h-16 rounded-2xl bg-purple-50 text-Storepurple flex items-center justify-center mb-4">
+            <MdShoppingCart size={32} />
+          </div>
+          <p className="text-lg md:text-xl font-dayone text-gray-800 mb-1">
             No products in {category || "this category"} yet
           </p>
-          <p className="text-xs md:text-sm font-roboto text-gray-500 mb-5">
-            Check back soon or browse other categories.
+          <p className="text-xs md:text-sm font-roboto text-gray-500 mb-6 max-w-sm">
+            We are restocking this section soon. Check back shortly or explore our other categories.
           </p>
           <a
             href={ROUTES.LANDINGPAGE}
-            className="px-5 py-2.5 bg-Storepurple text-white text-sm font-roboto font-medium rounded-full hover:bg-StorepurpleDark transition-colors"
+            className="px-6 py-2.5 bg-Storepurple text-white text-sm font-roboto font-medium rounded-full hover:bg-StorepurpleDark transition-colors shadow-sm"
           >
             Back to Home
           </a>
         </div>
       )}
 
-      {!loading && categoryProducts && categoryProducts.length > 0 && (
-        <div className="w-full h-auto md:p-2 grid grid-flow-row grid-cols-3 md:grid-cols-4 bg-purple-100 items-center">
-          {categoryProducts.map((i: any, index: number) => (
-            <div
-              className="w-[125px] md:w-[180px] h-[223px] md:h-[270px] mx-auto my-6 md:my-10 p-1 rounded-lg items-center flex flex-col bg-white cursor-pointer shadow-lg hover:shadow-xl transform transition-transform duration-300 hover:scale-105"
-              key={i.id ?? index}
-            >
-              <a
-                href={`${ROUTES.PRODUCT}/${i.id}`}
-                className="w-full h-auto mx-auto items-center flex flex-col"
-              >
-                <img
-                  src={i.image}
-                  alt={i.name}
-                  className="m-auto w-full h-36 md:h-44 object-contain"
-                />
-                <p className="w-full px-2 text-[10px] md:text-sm truncate text-slate-800 text-center font-bold">
-                  {i.name}
-                </p>
-
-                <h2 className="text-[10px] md:text-sm py-1 text-black flex flex-col md:flex-row items-center">
-                  ₦{priceFormat.format(i.price)}
-                  {i.old_price != 0 && i.old_price != null && (
-                    <span className="pl-2 text-slate-600 text-sm line-through font-normal">
-                      {i.old_price != i.price && `₦${priceFormat.format(i.old_price)}`}
-                    </span>
-                  )}
-                </h2>
-
-                {User && (
-                  <button
-                    type="button"
-                    className="w-full py-2 bg-[#4303a8] hover:bg-[#6d35c7] flex flex-row items-center rounded cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      const cartItem = { ...i, inStock: 1 };
-                      addToCart(cartItem);
-                    }}
-                  >
-                    <MdShoppingCart className="text-md text-white ml-auto" />
-                    <span className="mr-auto pl-2 text-white text-[11px] md:text-sm font-normal">
-                      Add to cart
-                    </span>
-                  </button>
-                )}
-              </a>
-            </div>
+      {!loading && count > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 md:gap-5">
+          {categoryProducts.map((product: any, index: number) => (
+            <StoreProductCard
+              key={product.id ?? index}
+              product={product}
+              onAddToCart={addToCart}
+            />
           ))}
         </div>
       )}

@@ -123,35 +123,41 @@ const DefaultNav: React.FC<AppComponent> = ({ Cart }) => {
 
   return (
     <>
-      <nav className="fixed top-0 w-full bg-white backdrop-blur-sm border-b border-gray-100 z-20">
-        <div className="max-w-7xl mx-auto h-16 md:h-[68px] px-2 md:px-6 flex items-center gap-4">
+      <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-sm z-20">
+        <div className="max-w-7xl mx-auto h-16 md:h-[70px] px-3 md:px-6 flex items-center gap-3 md:gap-4">
           {/* Hamburger — always visible */}
           <button
             onClick={() => setCategoryOpen(true)}
-            className="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 md:w-9 md:h-9 rounded-full hover:bg-gray-100 transition-colors"
+            className="flex-shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-purple-50 text-gray-700 hover:text-Storepurple transition-colors"
             aria-label="Open categories"
           >
-            <MdMenu size={24} className="text-gray-700" />
+            <MdMenu size={24} />
           </button>
 
           <a className="flex-shrink-0" href="/">
             <img
               src="/img/OneStore logo.svg"
               alt="OneStore"
-              className="h-5 md:h-9 object-contain"
+              className="h-6 md:h-9 object-contain"
             />
           </a>
 
-          <form onSubmit={handleSearch} className="flex flex-1 max-w-lg mx-0 md:mx-auto">
-            <div className="relative w-full">
-              <MdSearch className="absolute left-2.5 md:left-3.5 top-1/2 -translate-y-1/2 text-[20px] md:text-[22px] text-gray-400" />
+          <form onSubmit={handleSearch} className="flex flex-1 max-w-xl mx-0 md:mx-auto">
+            <div className="relative w-full flex items-center">
+              <MdSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[20px] text-gray-400 pointer-events-none" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search products..."
-                className="w-full pl-8 md:pl-10 pr-2 md:pr-4 py-1.5 md:py-2.5 text-xs md:text-sm font-roboto bg-gray-50 border border-gray-200 rounded-full outline-none transition-all focus:border-Storepurple focus:ring-2 focus:ring-purple-100"
+                placeholder="Search products, brands and categories..."
+                className="w-full pl-10 pr-20 py-2 md:py-2.5 text-xs md:text-sm font-roboto bg-gray-50 hover:bg-gray-100/70 focus:bg-white border border-gray-200 rounded-full outline-none transition-all focus:border-Storepurple focus:ring-2 focus:ring-purple-100"
               />
+              <button
+                type="submit"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3.5 py-1 md:py-1.5 text-xs font-roboto font-semibold text-white bg-Storepurple hover:bg-StorepurpleDark rounded-full transition-colors"
+              >
+                Search
+              </button>
             </div>
           </form>
 

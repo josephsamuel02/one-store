@@ -52,16 +52,18 @@ const Cart: React.FC = () => {
   }, [token]);
 
   return (
-    <div className="w-full px-3 flex flex-col items-center h-full pt-16 md:pt-20 bg-purple-100">
+    <div className="w-full min-h-screen flex flex-col pt-20 md:pt-24 bg-gray-50">
       <DefaultNav Cart={cartProducts} />
-      {token && (
-        <CartItems
-          cartItems={cartProducts}
-          cartRowId={cartRowId}
-          totalPrice={totalPrice}
-          getCart={getCart}
-        />
-      )}
+      <main className="flex-1 w-full px-3 md:px-6">
+        {token && (
+          <CartItems
+            cartItems={cartProducts}
+            cartRowId={cartRowId}
+            totalPrice={totalPrice}
+            getCart={getCart}
+          />
+        )}
+      </main>
       <Footer />
     </div>
   );
